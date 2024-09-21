@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  phonebook_api:
+    build: .
+    container_name: phonebook-web-server
+    ports:
+      - "8000:80"
+    networks:
+      - phonebook-network
+
+networks:
+  phonebook-network:
+    driver: bridge

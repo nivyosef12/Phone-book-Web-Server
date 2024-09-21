@@ -35,9 +35,20 @@ cd Phone-book-Web-Server
 
 # Local Dev
 - run locally with: uvicorn app.main:app --app-dir . --host 127.0.0.1 --port 8000
-- run locally on container - TODO
+- run locally on container
+    - docker-compose up -d --force-recreate
+    - docker-compose down # to stop the container 
 
 
 - Navigate to http://127.0.0.1:8000/docs for simple way to test/use the server
 
 # Run Tests
+## Local
+- 
+
+## On Container
+- docker-compose up -d --force-recreate
+- docker exec -it phonebook-web-server /bin/sh
+- pytest tests/ # to run all tests
+- pytest pytest pathto/test/file # to run all tests (example - pytest tests/app_tests/common_tests/test_utils.py)
+- docker-compose down
