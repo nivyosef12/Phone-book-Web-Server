@@ -6,3 +6,7 @@ class AddContactInput(BaseModel):
     phone_number: str
     last_name: str = None
     address: str = None
+
+# --------------------------------- GetContactByPhoneInput ---------------------------------
+class GetContactByPhoneInput(BaseModel):
+    phone_number: str

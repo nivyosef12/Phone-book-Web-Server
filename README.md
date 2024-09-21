@@ -38,5 +38,5 @@ cd Phone-book-Web-Server
 - docker-compose up --build -d
 - docker exec -it phonebook-web-server /bin/sh
 - pytest tests/ # to run all tests
-- pytest pytest pathto/test/file # to run all tests (example - pytest tests/app_tests/common_tests/test_utils.py)
+- pytest pytest path/to/test/file # to run all tests (example - pytest tests/app_tests/common_tests/test_utils.py)
 - docker-compose down

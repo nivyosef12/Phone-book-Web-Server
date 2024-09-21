@@ -3,5 +3,8 @@ CREATE TABLE IF NOT EXISTS contacts (
     first_name VARCHAR(100),
     last_name VARCHAR(100),
     phone_number VARCHAR(15) UNIQUE,
-    address TEXT
+    address TEXT,
+    created_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_ts TIMESTAMP
 );

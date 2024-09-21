@@ -17,7 +17,7 @@ def get_db_url():
         raise e
 
 logging.info("Creating new async engine") 
-engine = create_async_engine(get_db_url(), echo=True)
+engine = create_async_engine(get_db_url(), echo=False)
 
 async def get_db():
 

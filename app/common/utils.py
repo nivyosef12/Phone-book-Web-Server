@@ -1,7 +1,29 @@
 import os
+import json
 import logging
+import urllib3
 
 from dotenv import load_dotenv
+from fastapi import HTTPException
+
+def handle_exception(e):
+    if isinstance(e, ValueError):
+        error_code = 404
+        error_message = f"Value Error: {e}"
+    elif isinstance(e, urllib3.exceptions.HTTPError):
+        error_code = 400
+        error_message = f"HTTP Error: {e}"
+    elif isinstance(e, HTTPException):
+        error_code = e.status_code
+        error_message = e.detail
+    else:
+        error_code = 500
+        error_message = f"Internal Error: {str(e)}"
+
+    log_msg = f"Error - {error_message}"
+    logging.error(log_msg, exc_info=True)
+    # print(log_msg)
+    return error_code, json.dumps({"error_msg": log_msg})
 
 def get_env_variable(var_name, default=None):
     """
