@@ -1,0 +1,7 @@
+# Fast api related
+fastapi==0.114.2
+fastapi-cli==0.0.4
+uvicorn==0.30.6
+
+# Env load
+python-dotenv==1.0.1
