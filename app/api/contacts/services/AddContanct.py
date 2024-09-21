@@ -5,6 +5,7 @@ import app.api.contacts.utils as utils
 
 from app.api.contacts.models import Contact
 from sqlalchemy.future import select
+from sqlalchemy.exc import IntegrityError
 from app.common.utils import handle_exception
 
 
@@ -37,6 +38,15 @@ async def add_contact(db_conn, first_name, phone_number, last_name=None, address
         
         return 200, json.dumps({"status": "ok"})
     
+    except IntegrityError as e:
+        if 'unique constraint' in str(e.orig):
+            logging.error(f"Duplicate entry for phone number: {phone_number}")
+        
+        else:
+            logging.error(f"IntegrityError occurred: {e.orig}")
+
+        return handle_exception(e)
+
     except Exception as e:
         logging.error(f"Error while adding contact - {e}")
         return handle_exception(e)
