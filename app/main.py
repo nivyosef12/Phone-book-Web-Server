@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from fastapi.responses import JSONResponse, Response
 
+from app.api.contacts.endpoints import router as contacts_router
+
 from app.common.utils import get_env_variable
 app = FastAPI()
 
@@ -42,6 +44,7 @@ origins = [
     "http://localhost:3000",
 ]
 
+app.include_router(contacts_router, prefix="/api/contacts")
 
 @app.get("/")
 def root():
