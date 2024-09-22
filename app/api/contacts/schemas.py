@@ -16,3 +16,11 @@ class GetAllContacts(BaseModel):
 # --------------------------------- GetContactByPhoneInput ---------------------------------
 class GetContactByPhoneInput(BaseModel):
     phone_number: str
+
+# --------------------------------- EditContactInput ---------------------------------
+class EditContactInput(BaseModel):
+    phone_number: str
+    new_phone_number: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    address: Optional[str] = None
