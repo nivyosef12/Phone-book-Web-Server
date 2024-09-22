@@ -36,6 +36,7 @@ async def add_contact(db_conn, first_name, phone_number, last_name=None, address
         db_conn.add(new_contact)
         await db_conn.commit()
         
+        logging.info(f"{first_name} added sucessfuly")
         return 200, json.dumps({"status": "ok"})
     
     except IntegrityError as e:
