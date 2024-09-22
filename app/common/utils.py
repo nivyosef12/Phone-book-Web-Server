@@ -1,7 +1,8 @@
 import os
 import json
-import logging
 import urllib3
+
+from app.common.logger import logger
 
 from dotenv import load_dotenv
 from fastapi import HTTPException
@@ -34,7 +35,7 @@ def handle_exception(e):
         error_message = f"Internal Error: {str(e)}"
 
     log_msg = f"Error - {error_message}"
-    logging.error(log_msg, exc_info=True)
+    logger.error(log_msg, exc_info=False)
     return error_code, json.dumps({"error_msg": log_msg})
 
 def get_env_variable(var_name, default=None):
@@ -56,19 +57,19 @@ def get_env_variable(var_name, default=None):
         Raises:
             ValueError: If the environment variable is not found and no default value is provided.
     """
-    logging.info(f"Getting env var - {var_name}")
+    logger.info(f"Getting env var - {var_name}")
     var_value = os.environ.get(var_name, None)
 
     # if None - needs to load env for the first time
     try:
         if var_value is None:
-            logging.info(f"Didnt found {var_name}, loading .env file")
+            logger.info(f"Didnt found {var_name}, loading .env file")
             load_dotenv()
 
             var_value = os.environ.get(var_name, default)
     except Exception as e:
         log_msg = f"Faild to load .env file - {e}"
-        logging.error(log_msg, exc_info=True)
+        logger.error(log_msg, exc_info=True)
         raise Exception(log_msg)
     
     # no value found and no default argument given

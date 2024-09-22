@@ -1,4 +1,3 @@
-import logging
 import json
 
 import app.api.contacts.utils as utils
@@ -7,6 +6,8 @@ from app.api.contacts.models import Contact
 from sqlalchemy.future import select
 from sqlalchemy.exc import IntegrityError
 from app.common.utils import handle_exception
+from app.common.logger import logger
+
 
 
 def is_valid_input(first_name, last_name, phone_number):
@@ -16,7 +17,7 @@ def is_valid_input(first_name, last_name, phone_number):
     
     if not utils.is_valid_name(first_name, last_name):
         log_msg = f"Error adding contact. Invalid name - {first_name} {last_name if last_name is not None else ''}"
-        logging.error(log_msg)
+        logger.error(log_msg)
         return False, log_msg
     
     return True, "ok"
@@ -26,7 +27,7 @@ async def add_contact(db_conn, first_name, phone_number, last_name=None, address
     # check if input is valid
     is_valid, msg = is_valid_input(first_name, last_name, phone_number)
     if not is_valid:
-        logging.error(msg)
+        logger.error(msg)
         return handle_exception(ValueError(msg))
     
     try:
@@ -36,18 +37,18 @@ async def add_contact(db_conn, first_name, phone_number, last_name=None, address
         db_conn.add(new_contact)
         await db_conn.commit()
         
-        logging.info(f"{first_name} added sucessfuly")
+        logger.info(f"{first_name} added sucessfuly")
         return 200, json.dumps({"status": "ok"})
     
     except IntegrityError as e:
         if 'unique constraint' in str(e.orig):
-            logging.error(f"Duplicate entry for phone number: {phone_number}")
+            logger.error(f"Duplicate entry for phone number: {phone_number}")
         
         else:
-            logging.error(f"IntegrityError occurred: {e.orig}")
+            logger.error(f"IntegrityError occurred: {e.orig}")
 
         return handle_exception(e)
 
     except Exception as e:
-        logging.error(f"Error while adding contact - {e}")
+        logger.error(f"Error while adding contact - {e}")
         return handle_exception(e)

@@ -1,8 +1,7 @@
-import logging
-
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from app.common.utils import get_env_variable
+from app.common.logger import logger
 
 def get_db_url():
     try:
@@ -13,18 +12,18 @@ def get_db_url():
 
         return f"postgresql+asyncpg://{pg_user}:{pg_password}@{db_host}/{db_name}"
     except Exception as e:
-        logging.error(f"Error detting db creds. {e}")
+        logger.error(f"Error detting db creds. {e}")
         raise e
 
-logging.info("Creating new async engine") 
+logger.info("Creating new async engine") 
 engine = create_async_engine(get_db_url(), echo=False)
 
 async def get_db():
 
-    logging.info("Creating Session")
+    logger.info("Creating Session")
     async_session = sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
 
-    logging.info("Creating new DB connection")
+    logger.info("Creating new DB connection")
     async with async_session() as session:
         yield session
 
