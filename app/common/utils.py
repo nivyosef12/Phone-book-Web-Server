@@ -8,6 +8,15 @@ from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 
 def handle_exception(e):
+    """
+        Helper function to handles errors form the server.
+
+        Args:
+            e (Exception): the exception that was raises
+            
+        Returns:
+            proper error code and error message
+    """
     if isinstance(e, ValueError):
         error_code = 404
         error_message = f"Value Error: {e}"
