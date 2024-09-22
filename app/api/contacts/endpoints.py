@@ -33,21 +33,39 @@ async def add_contact_endpoint(add_contact_input: AddContactInput, db_conn: Asyn
         raise HTTPException(status_code=500, detail=f"Faild to add {full_name} to DB. {e}")
         
     return Response(content=result, status_code=status_code, headers=headers)
+ 
+# --------------------------------- GetAllContacts ---------------------------------
+from app.api.contacts.schemas import GetAllContacts
+from app.api.contacts.services.GetContact import get_all_contancts
 
-# --------------------------------- GetContactByPhone ---------------------------------
-from app.api.contacts.schemas import GetContactByPhoneInput
-from app.api.contacts.services.GetContact import get_contanct
-
-@router.get("/get_contant_py_phone", tags=["contact"])
-async def get_contact_endpoint(phone_number: str = Query(..., description="The phone number of the contact"), db_conn: AsyncSession = Depends(get_db)):
+@router.get("/get_contact/", tags=["contact"])
+async def get_contact_endpoint(input_data: GetAllContacts = Depends(), db_conn: AsyncSession = Depends(get_db)):
     # TODO add logs for time metrics
 
     try:
         async with db_conn.begin():
-            status_code, result = await get_contanct(db_conn, phone_number)
+            status_code, result = await get_all_contancts(db_conn, input_data.limit, input_data.offset)
     except Exception as e:
         await db_conn.rollback()
-        raise HTTPException(status_code=500, detail=f"Faild to get from DB - {e}")
+        raise HTTPException(status_code=500, detail=f"Faild to get contants from DB - {e}")
         
     return Response(content=result, status_code=status_code, headers=headers)
     
+
+# --------------------------------- GetContactByPhone ---------------------------------
+from app.api.contacts.schemas import GetContactByPhoneInput
+from app.api.contacts.services.GetContact import get_contanct_by_phone
+
+@router.get("/get_contact/by_phone/", tags=["contact"])
+async def get_contact_endpoint(input_data: GetContactByPhoneInput = Depends(), db_conn: AsyncSession = Depends(get_db)):
+    # TODO add logs for time metrics
+
+    try:
+        async with db_conn.begin():
+            status_code, result = await get_contanct_by_phone(db_conn, input_data.phone_number)
+    except Exception as e:
+        await db_conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Faild to get contant from DB - {e}")
+        
+    return Response(content=result, status_code=status_code, headers=headers)
+
