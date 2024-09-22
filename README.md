@@ -1,17 +1,17 @@
 # Phone-book-Web-Server
-A scalable and simple phone book API built with FastAPI, MongoDB, and Docker, providing CRUD operations for managing contacts. The API supports pagination, contact search, error handling, and testing. Metrics are integrated using Datadog.
+A scalable and simple phone book API built with FastAPI, Postgres db, and Docker, providing CRUD operations for managing contacts. The API supports pagination, contact search, error handling, and testing. Metrics are integrated using Datadog.
 
 ## Features:
 - Add, edit, delete, and search contacts
 - Pagination support for retrieving up to 10 contacts at a time
 - Dockerized setup for easy deployment
-- MongoDB as the database
+- Postgres db as the database
 - Datadog integration for monitoring and metrics
 
 
 ## Tech Stack:
 - FastAPI
-- MongoDB
+- Postgres db
 - Docker & Docker Compose
 - Datadog for metrics
 
@@ -29,26 +29,14 @@ cd Phone-book-Web-Server
 - activate the vertual env with: source phone_book_server_env/bin/activate   
 - install requirements file with: pip install -r requirements.txt  
 
-## 4. TODO - continue
-
-
-
-# Local Dev
-- run locally with: uvicorn app.main:app --app-dir . --host 127.0.0.1 --port 8000
-- run locally on container
-    - docker-compose up -d --force-recreate
-    - docker-compose down # to stop the container 
-
-
+## 4. Run Server and DB Inside a Container
+- docker-compose up --build -d
+- docker-compose down # to stop the container
 - Navigate to http://127.0.0.1:8000/docs for simple way to test/use the server
 
 # Run Tests
-## Local
-- 
-
-## On Container
-- docker-compose up -d --force-recreate
+- docker-compose up --build -d
 - docker exec -it phonebook-web-server /bin/sh
 - pytest tests/ # to run all tests
-- pytest pytest pathto/test/file # to run all tests (example - pytest tests/app_tests/common_tests/test_utils.py)
+- pytest pytest path/to/test/file # to run all tests (example - pytest tests/app_tests/common_tests/test_utils.py)
 - docker-compose down
