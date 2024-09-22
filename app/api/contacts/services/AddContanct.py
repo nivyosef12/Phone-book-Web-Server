@@ -38,7 +38,7 @@ async def add_contact(db_conn, first_name, phone_number, last_name=None, address
         await db_conn.commit()
         
         logger.info(f"{first_name} added sucessfuly")
-        return 200, json.dumps({"status": "ok"})
+        return 200, json.dumps({"status": "ok", "message": "Contact added successfully."})
     
     except IntegrityError as e:
         if 'unique constraint' in str(e.orig):

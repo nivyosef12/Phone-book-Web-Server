@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, HTTPException, Response, Query, Request, Depends
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -66,6 +68,28 @@ async def get_contact_endpoint(input_data: GetContactByPhoneInput = Depends(), d
     except Exception as e:
         await db_conn.rollback()
         raise HTTPException(status_code=500, detail=f"Faild to get contant from DB - {e}")
+        
+    return Response(content=result, status_code=status_code, headers=headers)
+
+
+# --------------------------------- EditContact ---------------------------------
+from app.api.contacts.schemas import EditContactInput
+from app.api.contacts.services.EditContact import edit_contact
+
+@router.post("/edit", tags=["contact"])
+async def add_contact_endpoint(edit_contact_input: EditContactInput, db_conn: AsyncSession = Depends(get_db)):
+    # TODO add logs for time metrics
+    logger.info(f"edit_contant endpoint for {edit_contact_input.phone_number} called")
+
+    if edit_contact_input.new_phone_number is None and edit_contact_input.first_name is None and edit_contact_input.last_name is None and edit_contact_input.address is None:
+         return Response(content=json.dumps({"status": "ok", "message": "Nothing to update"}), status_code=200, headers=headers)
+    try:
+        async with db_conn.begin():
+            status_code, result = await edit_contact(db_conn, edit_contact_input.phone_number, new_phone_number=edit_contact_input.new_phone_number, first_name=edit_contact_input.first_name, last_name=edit_contact_input.last_name, address=edit_contact_input.address)
+    except Exception as e:
+        logger.error(f"Faild to edit {edit_contact_input.phone_number}. {e}")
+        await db_conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Faild to edit {edit_contact_input.phone_number}. {e}")
         
     return Response(content=result, status_code=status_code, headers=headers)
 

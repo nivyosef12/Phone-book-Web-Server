@@ -17,7 +17,7 @@ def is_valid_phone_number(phone_number):
     pattern = re.compile(r'^\+?\d{10,15}$')
     return bool(pattern.match(phone_number))
 
-def is_valid_name(first_name, last_name):
+def is_valid_name(first_name, last_name=None):
     """
         Check if a given name is valid
 
