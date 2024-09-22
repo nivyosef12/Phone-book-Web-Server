@@ -1,4 +1,5 @@
 import re
+from app.common.utils import get_env_variable
 
 def is_valid_phone_number(phone_number):
     """
@@ -32,3 +33,21 @@ def is_valid_name(first_name, last_name):
     
     pattern = re.compile(r"^[A-Za-z\s\-']{1,100}$")
     return bool(pattern.match(first_name)) and bool(pattern.match(last_name) if last_name is not None else True)
+
+def is_valid_limit_n_offset(limit, offset):
+    """
+        Check if a given limit offset are valid
+
+        Args:
+            limit (int): limit with a max value of LIMIT_CONTACTS_RESPONSE env var
+            offset (int): offset to skip results
+
+        Returns:
+            True iff limit and offset are valid
+    """
+    if not isinstance(limit, int) or not isinstance(offset, int):
+        return False
+    
+    max_limit = int(get_env_variable("LIMIT_CONTACTS_RESPONSE", 10))
+
+    return (limit > 0 and limit <= max_limit) and offset >= 0
