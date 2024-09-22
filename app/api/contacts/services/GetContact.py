@@ -19,14 +19,11 @@ async def get_all_contancts(db_conn, limit, offset=0):
     try:
         # TODO verify limit + offset dont excceed num of contacts?
         result_query = await db_conn.execute(
-                select(Contact)
-                .where(Contact.deleted_ts is None)
-                .order_by(Contact.id)
-                .limit(limit)
-                .offset(offset)
+                select(Contact).where(Contact.deleted_ts.is_(None)).order_by(Contact.id).limit(limit).offset(offset)
             )
         
         contacts = result_query.scalars().all()
+        logger.info(f"Fetched {len(contacts)} results")
         response = {}
         for contact in contacts:
             response[contact.id] = {
@@ -53,7 +50,7 @@ async def get_contanct_by_phone(db_conn, phone_number: str):
     try:
         # TODO assert not deleted
         result = await db_conn.execute(
-                select(Contact).where(Contact.phone_number == phone_number and Contact.deleted_ts is None)
+                select(Contact).where(Contact.phone_number == phone_number and Contact.deleted_ts.is_(None))
             )
         contact = result.scalar_one_or_none()
 

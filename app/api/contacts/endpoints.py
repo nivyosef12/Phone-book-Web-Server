@@ -38,7 +38,7 @@ async def add_contact_endpoint(add_contact_input: AddContactInput, db_conn: Asyn
 from app.api.contacts.schemas import GetAllContacts
 from app.api.contacts.services.GetContact import get_all_contancts
 
-@router.get("/get_contant/", tags=["contact"])
+@router.get("/get_contact/", tags=["contact"])
 async def get_contact_endpoint(input_data: GetAllContacts = Depends(), db_conn: AsyncSession = Depends(get_db)):
     # TODO add logs for time metrics
 
@@ -56,7 +56,7 @@ async def get_contact_endpoint(input_data: GetAllContacts = Depends(), db_conn: 
 from app.api.contacts.schemas import GetContactByPhoneInput
 from app.api.contacts.services.GetContact import get_contanct_by_phone
 
-@router.get("/get_contant/by_phone/", tags=["contact"])
+@router.get("/get_contact/by_phone/", tags=["contact"])
 async def get_contact_endpoint(input_data: GetContactByPhoneInput = Depends(), db_conn: AsyncSession = Depends(get_db)):
     # TODO add logs for time metrics
 

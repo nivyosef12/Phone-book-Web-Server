@@ -32,7 +32,7 @@ async def add_contact(db_conn, first_name, phone_number, last_name=None, address
     
     try:
         new_contact = Contact(first_name=first_name, last_name=last_name,
-                                phone_number=phone_number, address=address)
+                                phone_number=phone_number, address=address, deleted_ts=None)
         
         db_conn.add(new_contact)
         await db_conn.commit()
