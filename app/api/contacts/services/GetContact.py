@@ -43,7 +43,6 @@ async def get_all_contancts(db_conn, limit, offset=0):
         logger.error(f"Error while getting contacts for limit={limit}, offset={offset} - {e}")
         return handle_exception(e)
 
-
 async def get_contanct_by_phone(db_conn, phone_number: str):
     logger.info(f"Getting contact information for phune_number={phone_number}")
 
