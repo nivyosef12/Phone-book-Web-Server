@@ -93,3 +93,24 @@ async def add_contact_endpoint(edit_contact_input: EditContactInput, db_conn: As
         
     return Response(content=result, status_code=status_code, headers=headers)
 
+
+# --------------------------------- DeleteContact ---------------------------------
+from app.api.contacts.schemas import DeleteContactInput
+from app.api.contacts.services.DeleteContact import delete_contact
+
+@router.post("/delete", tags=["contact"])
+async def add_contact_endpoint(delete_contact_input: DeleteContactInput, db_conn: AsyncSession = Depends(get_db)):
+    # TODO add logs for time metrics
+    logger.info(f"edit_contant endpoint for {delete_contact_input.phone_number} called")
+
+    if delete_contact_input.phone_number is None and delete_contact_input.first_name is None and delete_contact_input.last_name is None:
+         return Response(content=json.dumps({"status": "ok", "message": "Nothing to delete"}), status_code=200, headers=headers)
+    try:
+        async with db_conn.begin():
+            status_code, result = await delete_contact(db_conn, delete_contact_input.phone_number, delete_contact_input.first_name, delete_contact_input.last_name)
+    except Exception as e:
+        logger.error(f"Faild to delete {delete_contact_input.phone_number}. {e}")
+        await db_conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Faild to delete {delete_contact_input.phone_number}. {e}")
+        
+    return Response(content=result, status_code=status_code, headers=headers)

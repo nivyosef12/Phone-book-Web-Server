@@ -24,3 +24,9 @@ class EditContactInput(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     address: Optional[str] = None
+
+# --------------------------------- DeleteContactInput ---------------------------------
+class DeleteContactInput(BaseModel):
+    phone_number: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
