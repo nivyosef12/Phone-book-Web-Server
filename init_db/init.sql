@@ -8,3 +8,7 @@ CREATE TABLE IF NOT EXISTS contacts (
     updated_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_ts TIMESTAMP
 );
+
+
+CREATE INDEX idx_phone_number ON contacts(phone_number);
+CREATE INDEX idx_deleted_ts ON contacts(deleted_ts);
