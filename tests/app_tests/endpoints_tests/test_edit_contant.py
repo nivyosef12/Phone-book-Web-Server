@@ -1,338 +1,186 @@
-# import httpx
-# import asyncio
-# import logging
+import httpx
+import asyncio
+import logging
+import json
+import random
 
-# from sqlalchemy.ext.asyncio import AsyncSession
-# from sqlalchemy.future import select
-# from sqlalchemy import delete
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import delete
+from sqlalchemy.future import select
+from app.main import app
+from app.api.contacts.models import Contact
+from app.common.db import get_db
+from datetime import datetime
 
-# from app.main import app
-# from app.api.contacts.models import Contact
-# from app.common.db import get_db
+class TestEditContact:
 
-# class TestAddContact:
-
-#     @classmethod
-#     def setup_class(cls):
-#         cls.contacts_number = 6
-
-#         cls.luffy = {
-#             "first_name": "Luffy",
-#             "phone_number": "+1234567890",
-#             "address": "East Blue"
-#         }
-#         cls.zoro = {
-#             "first_name": "Zoro",
-#             "last_name": "Roronua",
-#             "phone_number": "+1234567891",
-#             "address": "East Blue"
-#         }
-#         cls.zoro_other_phone = {
-#             "first_name": "Zoro",
-#             "last_name": "Roronua",
-#             "phone_number": "+12345677777",
-#             "address": "East Blue"
-#         }
-#         cls.sunji = {
-#             "first_name": "Sunji",
-#             "phone_number": "invalid_phone",
-#             "address": "East Blue"
-#         }
-#         cls.ussop = {
-#             "first_name": "Ussop",
-#             "phone_number": "+1234567893"
-#         }
-#         cls.numi = {
-#             "first_name": "Numi",
-#             "phone_number": "+1234566666",
-#             "address": "East Blue"
-#         }
-#         cls.chooper = {
-#             "first_name": "tony",
-#             "last_name": "chooper",
-#             "phone_number": "+1233333333",
-#             "address": "East Blue"
-#         }
-
-#     @classmethod
-#     def teardown_class(cls):
-#         # delete all added contacts
-#         async def inner():
-#             try:
-#                 async for db_conn in get_db():
-#                     stmt = delete(Contact)
-#                     result = await db_conn.execute(stmt)
-#                     await db_conn.commit()
-                    
-#                     deleted_count = result.rowcount
-#                     if deleted_count != cls.contacts_number:
-#                         raise Exception(f"deleted count({deleted_count}) != contacts_number({cls.contacts_number})")
-#             except Exception as e:
-#                 logging.error(f"Error while deleting contacts - {e}")
-#                 raise e
-
-#         asyncio.get_event_loop().run_until_complete(inner())
- 
-#     async def get_contact_from_db(self, phone_number, db_conn: AsyncSession):
-#         result = await db_conn.execute(
-#             select(Contact).where(Contact.phone_number == phone_number)
-#         )
-#         return result.scalars().first()
-
-#     def test_add_contact_success(self):
-
-#         async def inner():
-#             # setup client
-#             logging.info("Setting up client")
-#             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+    @classmethod
+    def setup_class(cls):
+        cls.contacts = [
+            {"phone_number": "1111111111", "first_name": "aaa", "last_name": "bbb", "address": "TLV", "deleted_ts": None},
+            {"phone_number": "2222222222", "first_name": "aaron", "last_name": "ccc", "address": "Jerusalem", "deleted_ts": None},
+            {"phone_number": "3333333333", "first_name": "ann", "last_name": "ddd", "address": "Haifa", "deleted_ts": None},
+            {"phone_number": "4444444444", "first_name": "bob", "last_name": "smith", "address": "Beer Sheva", "deleted_ts": None},
+            {"phone_number": "5555555555", "first_name": "bob", "last_name": "smith", "address": "Beer Sheva", "deleted_ts": None},
+            {"phone_number": "6666666666", "first_name": "slim", "last_name": "shady", "address": "Detroit", "deleted_ts": None},
+            {"phone_number": "7777777777", "first_name": "slim", "last_name": "shady", "address": "Detroit", "deleted_ts": datetime.now()},
+        ]
+        async def inner():
+            async for db_conn in get_db():
+                for contact in cls.contacts:
+                    new_contact = Contact(
+                        first_name=contact['first_name'], 
+                        last_name=contact['last_name'],
+                        phone_number=contact['phone_number'], 
+                        address=contact['address'],
+                        deleted_ts=contact['deleted_ts']
+                    )
+                    db_conn.add(new_contact)
                 
-#                 # add contact
-#                 logging.info(f"Adding {self.zoro} as contact")
-#                 response = await client.post("/api/contacts/add", json=self.zoro)
-#                 assert response.status_code == 201, f"Failed to add user - {response.json()}"
-#                 assert response.json()["status"] == "ok"
-#                 # self.contacts_number += 1
-
-#                 # assert add endpoint worked
-#                 logging.info(f"Getting info from db where phone number = {self.zoro['phone_number']}")
-#                 async for db_conn in get_db():
-#                     zoro_contact = await self.get_contact_from_db(self.zoro['phone_number'], db_conn)
-
-#                 assert zoro_contact is not None, f"Contact {self.zoro['first_name']} should exist in the database."
-#                 assert zoro_contact.first_name == self.zoro['first_name'], f"First name is note the same -> {zoro_contact.first_name} != {self.zoro['first_name']}"
-#                 assert zoro_contact.last_name == self.zoro['last_name'], f"Last name is note the same -> {zoro_contact.last_name} != {self.zoro['last_name']}"
-#                 assert zoro_contact.phone_number == self.zoro['phone_number'], f"Phone number is note the same -> {zoro_contact.phone_number} != {self.zoro['phone_number']}"
-#                 assert zoro_contact.address == self.zoro['address'], f"Address is note the same -> {zoro_contact.address} != {self.zoro['address']}"
-#                 assert zoro_contact.created_ts is not None, f"created_ts is None"
-#                 assert zoro_contact.updated_ts is not None, f"updated_ts is None"
-#                 assert zoro_contact.deleted_ts is None, f"deleted_ts is not None"
-
-#         asyncio.get_event_loop().run_until_complete(inner())
-
-#     def test_add_contact_after_delete(self):
-
-#         async def inner():
-#             # setup client
-#             logging.info("Setting up client")
-#             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
-                
-#                 # add contact
-#                 logging.info(f"Adding {self.chooper} as contact")
-#                 response = await client.post("/api/contacts/add", json=self.chooper)
-#                 assert response.status_code == 201, f"Failed to add user for the first time - {response.json()}"
-#                 assert response.json()["status"] == "ok"
-
-#                 # delete contact and re_add with diff name
-#                 logging.info(f"Deleting {self.chooper}")
-#                 del_response = await client.post("/api/contacts/delete", json={'phone_number': self.chooper['phone_number']})
-
-#                 # re-add chopper with different name
-#                 self.chooper['first_name'] = "tony tony"
-#                 response = await client.post("/api/contacts/add", json=self.chooper)
-#                 assert response.status_code == 201, f"Failed to add user for the second time - {response.json()}"
-#                 assert response.json()["status"] == "ok"
-#                 # self.contacts_number += 1
-
-#                 # assert add endpoint worked
-#                 logging.info(f"Getting info from db where phone number = {self.chooper['phone_number']}")
-#                 async for db_conn in get_db():
-#                     chopper_contact = await self.get_contact_from_db(self.chooper['phone_number'], db_conn)
-
-#                 assert chopper_contact is not None, f"Contact {self.chooper['first_name']} should exist in the database."
-#                 assert chopper_contact.first_name == self.chooper['first_name'], f"First name is note the same -> {chopper_contact.first_name} != {self.chooper['first_name']}"
-#                 assert chopper_contact.last_name == self.chooper['last_name'], f"Last name is note the same -> {chopper_contact.last_name} != {self.chooper['last_name']}"
-#                 assert chopper_contact.phone_number == self.chooper['phone_number'], f"Phone number is note the same -> {chopper_contact.phone_number} != {self.chooper['phone_number']}"
-#                 assert chopper_contact.address == self.chooper['address'], f"Address is note the same -> {chopper_contact.address} != {self.chooper['address']}"
-#                 assert chopper_contact.created_ts is not None, f"created_ts is None"
-#                 assert chopper_contact.updated_ts is not None, f"updated_ts is None"
-#                 assert chopper_contact.deleted_ts is None, f"deleted_ts is not None"
-
-#         asyncio.get_event_loop().run_until_complete(inner())
+                await db_conn.commit()
+        asyncio.get_event_loop().run_until_complete(inner())
     
-#     def test_add_contact_missing_last_name(self):
+    @classmethod
+    def teardown_class(cls):
+        pass
+        async def inner():
+            try:
+                async for db_conn in get_db():
+                    stmt = delete(Contact)
+                    result = await db_conn.execute(stmt)
+                    await db_conn.commit()
 
-#         async def inner():
-#             logging.info("Setting up client")
-#             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
-                
-#                 # add contact
-#                 logging.info(f"Adding {self.luffy} as contact")
-#                 response = await client.post("/api/contacts/add", json=self.luffy)
-#                 assert response.status_code == 201, f"Failed to add user - {response.json()}"
-#                 assert response.json()["status"] == "ok"
-#                 # self.contacts_number += 1
+                    deleted_count = result.rowcount
+                    if deleted_count != len(cls.contacts):
+                        raise Exception(f"deleted count({deleted_count}) != contacts_number({len(cls.contacts)})")
+            except Exception as e:
+                logging.error(f"Error while deleting contacts - {e}")
+                raise e
+            
+        asyncio.get_event_loop().run_until_complete(inner())
 
-#                 logging.info(f"Getting info from db where phone number = {self.luffy['phone_number']}")
-#                 async for db_conn in get_db():
-#                     luffy_contact = await self.get_contact_from_db(self.luffy['phone_number'], db_conn)
-
-#                 # Assert contact in db
-#                 assert luffy_contact is not None, f"Contact {self.luffy['first_name']} should exist in the database."
-#                 assert luffy_contact.first_name == self.luffy['first_name'], f"First name is note the same -> {luffy_contact.first_name} != {self.luffy['first_name']}"
-#                 assert luffy_contact.last_name is None, f"Last name is note the same -> {luffy_contact.last_name} is not None"
-#                 assert luffy_contact.phone_number == self.luffy['phone_number'], f"Phone number is note the same -> {luffy_contact.phone_number} != {self.luffy['phone_number']}"
-#                 assert luffy_contact.address == self.luffy['address'], f"Address is note the same -> {luffy_contact.address} != {self.luffy['address']}"
-#                 assert luffy_contact.created_ts is not None, f"created_ts is None"
-#                 assert luffy_contact.updated_ts is not None, f"updated_ts is None"
-#                 assert luffy_contact.deleted_ts is None, f"deleted_ts is not None"
-#         asyncio.get_event_loop().run_until_complete(inner())
-
-#     def test_add_contact_missing_first_name(self):
-#         async def inner():
-
-#             logging.info("Setting up client")
-#             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
-#                 response = await client.post("/api/contacts/add", json={
-#                     "phone_number": "+1234567892",
-#                     "address": "East Blue"
-#                 })
-#                 assert response.status_code == 422, f"Expected 422 for missing first name - {response.json()}"
-#         asyncio.get_event_loop().run_until_complete(inner())
+    async def get_contact_from_db(self, phone_number, db_conn: AsyncSession):
+        result = await db_conn.execute(
+            select(Contact).where(Contact.phone_number == phone_number)
+        )
+        return result.scalars().first()
     
-#     def test_add_contact_missing_phone_number(self):
-#         async def inner():
+    def test_edit_contact_no_arguments(self):
+        async def inner():
+            async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+                logging.info(f"searching contacts with no arguments")
 
-#             logging.info("Setting up client")
-#             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
-#                 response = await client.post("/api/contacts/add", json={
-#                     "first_name": "some",
-#                     "last_name": "name",
-#                     "address": "East Blue"
-#                 })
-#                 assert response.status_code == 422, f"Expected 422 for missing phone number - {response.json()}"
-#         asyncio.get_event_loop().run_until_complete(inner())
-        
-#     def test_add_contact_without_address(self):
-#         async def inner():
+                contact_to_edit = self.contacts[0]
+                response = await client.post(f"/api/contacts/edit", json={"phone_number": contact_to_edit["phone_number"]})
+                assert response.status_code == 422, f"Status code not correct {response.status_code} - {response.json()}"
 
-#             logging.info("Setting up client")
-#             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+        asyncio.get_event_loop().run_until_complete(inner())
 
-#                 logging.info(f"Adding {self.ussop} as contact")
-#                 response = await client.post("/api/contacts/add", json=self.ussop)
-#                 assert response.status_code == 201, f"Failed to add user without address - {response.json()}"
-#                 assert response.json()["status"] == "ok"
-#                 # self.contacts_number += 1
+    def test_edit_contact_with_valid_data(self):
+        async def inner():
+            async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+                contact_to_edit = self.contacts[1]
 
-#                 # assert the contact was added without an address
-#                 logging.info(f"Getting info from db where phone number = {self.ussop['phone_number']}")
-#                 async for db_conn in get_db():
-#                     usopp_contact = await self.get_contact_from_db(self.ussop['phone_number'], db_conn)
+                new_phone_number = "+12345678901"
+                new_first_name = "Updated"
+                new_last_name = "Name"
+                new_address = "new"
+                response = await client.post(f"/api/contacts/edit", json={
+                    "phone_number": contact_to_edit["phone_number"],
+                    "new_phone_number": new_phone_number,
+                    "first_name": new_first_name,
+                    "last_name": new_last_name,
+                    "address": new_address
+                })
+
+                assert response.status_code == 200, f"Status code not correct {response.status_code} - {response.json()}"
                 
-#                 assert usopp_contact is not None, f"Contact {self.ussop['first_name']} should exist in the database."
-#                 assert usopp_contact.first_name == self.ussop['first_name'], f"First name is note the same -> {usopp_contact.first_name} != {self.ussop['first_name']}"
-#                 assert usopp_contact.last_name is None, f"Last name is note the same -> {usopp_contact.last_name} is not None"
-#                 assert usopp_contact.phone_number == self.ussop['phone_number'], f"Phone number is note the same -> {usopp_contact.phone_number} != {self.ussop['phone_number']}"
-#                 assert usopp_contact.address is None, f"Address is note the same -> {usopp_contact.address} is not None"
-#                 assert usopp_contact.created_ts is not None, f"created_ts is None"
-#                 assert usopp_contact.updated_ts is not None, f"updated_ts is None"
-#                 assert usopp_contact.deleted_ts is None, f"deleted_ts is not None"
-#         asyncio.get_event_loop().run_until_complete(inner())
+                # assert add endpoint worked
+                logging.info(f"Getting info from db where phone number = {contact_to_edit['phone_number']}")
+                async for db_conn in get_db():
+                    prev_new_edited_contact = await self.get_contact_from_db(contact_to_edit["phone_number"], db_conn)
+                    new_edited_contact = await self.get_contact_from_db(new_phone_number, db_conn)
 
-#     def test_add_contact_invalid_phone_number(self):
-#         async def inner():
+                assert prev_new_edited_contact is None, f"Contact with phone number = {contact_to_edit['phone_number']} should not exist in the database."
+                assert new_edited_contact is not None, f"Contact {new_first_name} should exist in the database."
+                assert new_edited_contact.first_name == new_first_name, f"First name is note the same -> {new_edited_contact.first_name} != {new_first_name}"
+                assert new_edited_contact.last_name == new_last_name, f"Last name is note the same -> {new_edited_contact.last_name} != {new_last_name}"
+                assert new_edited_contact.phone_number == new_phone_number, f"Phone number is note the same -> {new_edited_contact.phone_number} != {new_phone_number}"
+                assert new_edited_contact.address == new_address, f"Address is note the same -> {new_edited_contact.address} != {new_address}"
+                assert new_edited_contact.created_ts is not None, f"created_ts is None"
+                assert new_edited_contact.updated_ts is not None, f"updated_ts is None"
+                assert new_edited_contact.deleted_ts is None, f"deleted_ts is not None"
 
-#             logging.info("Setting up client")
-#             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
-#                 response = await client.post("/api/contacts/add", json=self.sunji)
-
-#                 logging.info("Assert request failed")
-#                 assert response.status_code == 422, f"Expected 422 for invalid phone number - {response.json()}"
-#         asyncio.get_event_loop().run_until_complete(inner())
-
-#     def test_add_contact_duplicate_phone_number(self):
-#         async def inner():
-
-#             logging.info("Setting up client")
-#             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
-#                 logging.info(f"Adding {self.numi} for the first time")
-#                 await client.post("/api/contacts/add", json=self.numi)
-#                 # self.contacts_number += 1
-
-#                 logging.info(f"Adding {self.numi} for the second time")
-#                 response = await client.post("/api/contacts/add", json=self.numi)
-
-#                 logging.info("Assert request failed")
-#                 assert response.status_code == 409, f"Expected 400 for duplicate phone number - {response.json()}"
-#                 assert "already exists" in response.json()["error_msg"], "Error message should indicate duplicate entry."
-#         asyncio.get_event_loop().run_until_complete(inner())
-
-#     def test_add_contact_invalid_name(self):
-#         async def inner():
-
-#             logging.info("Setting up client")
-#             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
-#                 response = await client.post("/api/contacts/add", json={
-#                     "first_name": "",
-#                     "last_name": None,
-#                     "phone_number": "+1234567894",
-#                     "address": "East Blue"
-#                 })
-
-#                 logging.info("Assert request failed")
-#                 assert response.status_code == 422, f"Expected 422 for invalid name - {response.json()}"
-#         asyncio.get_event_loop().run_until_complete(inner())
-
-#     def test_add_contact_same_name(self):
-
-#         async def inner():
-#             # setup client
-#             logging.info("Setting up client")
-#             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
-                
-#                 # add contact
-#                 logging.info(f"Adding {self.zoro_other_phone} as contact")
-#                 response = await client.post("/api/contacts/add", json=self.zoro_other_phone)
-#                 assert response.status_code == 201, f"Failed to add user - {response.json()}"
-#                 assert response.json()["status"] == "ok"
-#                 # self.contacts_number += 1
-
-#                 # assert add endpoint worked
-#                 logging.info(f"Getting info from db where phone number = {self.zoro_other_phone['phone_number']}")
-#                 async for db_conn in get_db():
-#                     zoro_contact = await self.get_contact_from_db(self.zoro_other_phone['phone_number'], db_conn)
-
-#                 assert zoro_contact is not None, f"Contact {self.zoro_other_phone['first_name']} should exist in the database."
-#                 assert zoro_contact.first_name == self.zoro_other_phone['first_name'], f"First name is note the same -> {zoro_contact.first_name} != {self.zoro_other_phone['first_name']}"
-#                 assert zoro_contact.last_name == self.zoro_other_phone['last_name'], f"Last name is note the same -> {zoro_contact.last_name} != {self.zozoro_other_phonero['last_name']}"
-#                 assert zoro_contact.phone_number == self.zoro_other_phone['phone_number'], f"Phone number is note the same -> {zoro_contact.phone_number} != {self.zoro_other_phone['phone_number']}"
-#                 assert zoro_contact.address == self.zoro_other_phone['address'], f"Address is note the same -> {zoro_contact.address} != {self.zoro_other_phone['address']}"
-#                 assert zoro_contact.created_ts is not None, f"created_ts is None"
-#                 assert zoro_contact.updated_ts is not None, f"updated_ts is None"
-#                 assert zoro_contact.deleted_ts is None, f"deleted_ts is not None"
-
-#         asyncio.get_event_loop().run_until_complete(inner())
+        asyncio.get_event_loop().run_until_complete(inner())
     
-#     def test_add_db_constraint_exceed(self):
+    def test_edit_non_existing_contact(self):
+        async def inner():
+            async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+                response = await client.post(f"/api/contacts/edit", json={
+                    "phone_number": "65555555555",
+                    "new_phone_number": "+12345678901"
+                })
 
-#         async def inner():
-#             # setup client
-#             logging.info("Setting up client")
-#             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
-                
-#                 # add contact
-#                 response = await client.post("/api/contacts/add", json={
-#                     "phone_number": "1" * 20,
-#                     "first_name": "a",
-#                     "last_name": "name",
-#                     "address": "East Blue"
-#                 })
-#                 assert response.status_code == 422, f"Failed to add user - {response.json()}"
+                assert response.status_code == 404, f"Status code not correct {response.status_code} - {response.json()}"
+        asyncio.get_event_loop().run_until_complete(inner())
+    
+    def test_edit_contact_invalid_phone_number(self):
+        async def inner():
+            async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+                contact_to_edit = self.contacts[2]
 
-#                 response = await client.post("/api/contacts/add", json={
-#                     "phone_number": "11",
-#                     "first_name": "a" * 150,
-#                     "last_name": "name",
-#                     "address": "East Blue"
-#                 })
-#                 assert response.status_code == 422, f"Failed to add user - {response.json()}"
+                response = await client.post(f"/api/contacts/edit", json={
+                    "phone_number": contact_to_edit["phone_number"],
+                    "new_phone_number": "invalid_phone_format"
+                })
 
-#                 response = await client.post("/api/contacts/add", json={
-#                     "phone_number": "11",
-#                     "first_name": "aa",
-#                     "last_name": "a" * 150,
-#                     "address": "East Blue"
-#                 })
-#                 assert response.status_code == 422, f"Failed to add user - {response.json()}"
+                assert response.status_code == 422, f"Expected status code 422 for invalid phone number - {response.json()}"
+        asyncio.get_event_loop().run_until_complete(inner())
+    
+    def test_edit_contact_duplicate_phone_number(self):
+        async def inner():
+            async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+                contact_to_edit = self.contacts[3]
+                existing_contact = self.contacts[4]
 
-#         asyncio.get_event_loop().run_until_complete(inner())
+                response = await client.post(f"/api/contacts/edit", json={
+                    "phone_number": contact_to_edit["phone_number"],
+                    "new_phone_number": existing_contact["phone_number"],  # set a duplicate phone number
+                })
+
+                assert response.status_code == 409, f"Expected status code 409 for duplicate phone number - {response.json()}"
+        asyncio.get_event_loop().run_until_complete(inner())
+    
+    def test_edit_contact_non_nullable_fields(self):
+        async def inner():
+            async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+                contact_to_edit = self.contacts[5]
+
+                response = await client.post(f"/api/contacts/edit", json={
+                    "phone_number": contact_to_edit["phone_number"],
+                    "new_phone_number": None,  # Invalid since it's required
+                })
+
+                assert response.status_code == 422, f"Expected status code 422 for non-nullable field - {response.json()}"
+        asyncio.get_event_loop().run_until_complete(inner())
+    
+    def test_edit_deleted_contact(self):
+        async def inner():
+            async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+                contact_to_edit = self.contacts[6]
+
+                response = await client.post(f"/api/contacts/edit", json={
+                    "phone_number": contact_to_edit["phone_number"],
+                    "new_phone_number": "4444",  # Invalid since it's required
+                })
+
+                assert response.status_code == 404, f"Expected status code 404 for deleted contact edit - {response.json()}"
+        asyncio.get_event_loop().run_until_complete(inner())
+
+
+
+
+
+
+
+   

@@ -34,15 +34,17 @@ class EditContactInput(BaseModel):
     @field_validator('*')
     def validate_fields(cls, v, info: ValidationInfo) -> Optional[str]:
         if info.field_name in ['first_name', 'last_name']:
-            return validate_name(v)
+            try:
+                validate_phone(v)
+                return v
+            except:
+                ValueError("Phone number must contain only digits and optionally start with '+'")
         elif info.field_name in ['phone_number', 'new_phone_number']:
-            return validate_phone(v)
-
-        # check if at least one field is being edited
-        if info.field_name == list(info.data.keys())[-1]:
-            edit_fields = {'new_phone_number', 'first_name', 'last_name', 'address'}
-            if not any(info.data.get(f) for f in edit_fields):
-                raise ValueError("At least one field must be provided for editing")
+            try:
+                validate_name(v)
+                return v
+            except:
+                ValueError("Name must contain only letters and spaces") 
 
         return v
 
