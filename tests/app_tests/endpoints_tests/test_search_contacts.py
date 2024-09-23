@@ -2,6 +2,7 @@ import httpx
 import asyncio
 import logging
 import json
+import random
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete
@@ -64,12 +65,16 @@ class TestSearchContact:
     def test_search_contact_by_phone_number(self):
         async def inner():
             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
-                logging.info(f"searching contacts by phone number prefix")
-                response = await client.get(f"/api/contacts/search?phone_number=111")
+                contact_to_search = random.choice(self.contacts)
+
+                logging.info(f"searching contacts by phone number=({contact_to_search['phone_number']}) prefix")
+                response = await client.get(f"/api/contacts/search?phone_number={contact_to_search['phone_number'][0:3]}")
                 assert response.status_code == 200, f"Status code not correct {response.status_code} - {response.json()}"
                 contacts = response.json()
                 assert len(contacts) == 1, f"Expected 1 contact, got {len(contacts)}"
-                assert contacts['1']['first_name'] == "aaa", f"Expected 'aaa', got {contacts['1']['first_name']}"
+
+                contact_info = list(contacts.values())[0]
+                assert contact_info["first_name"] == contact_to_search['first_name'], f"Expected {contact_to_search['first_name']}, got {contact_info['first_name']}"
 
         asyncio.get_event_loop().run_until_complete(inner())
 
@@ -89,12 +94,16 @@ class TestSearchContact:
     def test_search_contact_by_last_name(self):
         async def inner():
             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
-                logging.info(f"searching contacts by last name prefix")
-                response = await client.get(f"/api/contacts/search?last_name=sm")
+                contact_to_search = random.choice(self.contacts)
+
+                logging.info(f"searching contacts by last_name=({contact_to_search['last_name']}) prefix")
+                response = await client.get(f"/api/contacts/search?last_name={contact_to_search['last_name'][0:2]}")
                 assert response.status_code == 200, f"Status code not correct {response.status_code} - {response.json()}"
                 contacts = response.json()
                 assert len(contacts) == 1, f"Expected 1 contact, got {len(contacts)}"
-                assert contacts['4']['last_name'] == "smith", f"Expected 'smith', got {contacts['4']['last_name']}"
+
+                contact_info = list(contacts.values())[0]
+                assert contact_info['last_name'] == contact_to_search['last_name'], f"Expected {contact_to_search['last_name']}, got {contact_info['last_name']}"
 
         asyncio.get_event_loop().run_until_complete(inner())
 
@@ -106,7 +115,9 @@ class TestSearchContact:
                 assert response.status_code == 200, f"Status code not correct {response.status_code} - {response.json()}"
                 contacts = response.json()
                 assert len(contacts) == 1, f"Expected 1 contact, got {len(contacts)}"
-                assert contacts['2']['first_name'] == "aaron", f"Expected 'aaron', got {contacts['2']['first_name']}"
+
+                contact_info = list(contacts.values())[0]
+                assert contact_info['first_name'] == "aaron", f"Expected 'aaron', got {contact_info['first_name']}"
 
         asyncio.get_event_loop().run_until_complete(inner())
 
