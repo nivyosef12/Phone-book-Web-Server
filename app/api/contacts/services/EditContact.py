@@ -5,6 +5,7 @@ from datetime import datetime
 
 from app.api.contacts.models import Contact
 from sqlalchemy.future import select
+from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 from app.common.utils import handle_exception
 from app.common.logger import logger
@@ -32,8 +33,11 @@ async def edit_contact(db_conn, phone_number, new_phone_number=None, first_name=
         
         # fetch the existing contact by phone number
         result = await db_conn.execute(
-            select(Contact).where(Contact.phone_number == phone_number and Contact.deleted_ts.is_(None))
-        )
+                select(Contact).where(and_(
+                    Contact.phone_number == phone_number,
+                    Contact.deleted_ts.is_(None)
+                ))
+            )
         contact = result.scalar_one_or_none()
 
         # check if contact exists

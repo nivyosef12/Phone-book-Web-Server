@@ -43,6 +43,7 @@ async def search_contact(db_conn, phone_number=None, first_name=None, last_name=
         if last_name:
             query = query.where(Contact.last_name.ilike(f'{last_name}%'))
 
+        logger.debug(f"\n\n\n{query}\n\n\n")
         # execute query and fetch all matching contacts
         result = await db_conn.execute(query)
         contacts = result.scalars().all()

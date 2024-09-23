@@ -5,6 +5,7 @@ import app.api.contacts.utils as utils
 from datetime import datetime
 from app.api.contacts.models import Contact
 from sqlalchemy.future import select
+from sqlalchemy import and_
 from app.common.utils import handle_exception
 from app.common.logger import logger
 
@@ -50,7 +51,10 @@ async def get_contanct_by_phone(db_conn, phone_number: str):
     try:
         # TODO assert not deleted
         result = await db_conn.execute(
-                select(Contact).where(Contact.phone_number == phone_number and Contact.deleted_ts.is_(None))
+                select(Contact).where(and_(
+                    Contact.phone_number == phone_number,
+                    Contact.deleted_ts.is_(None)
+                ))
             )
         contact = result.scalar_one_or_none()
 
