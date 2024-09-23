@@ -28,7 +28,7 @@ async def add_contact_endpoint(add_contact_input: AddContactInput, db_conn: Asyn
 
     try:
         async with db_conn.begin():
-            status_code, result = await add_contact(db_conn, add_contact_input.first_name, add_contact_input.phone_number, last_name=add_contact_input.last_name, address=add_contact_input.address)
+            status_code, result = await add_contact(db_conn, add_contact_input)
     except Exception as e:
         logger.error(f"Faild to add {full_name} to DB. {e}")
         await db_conn.rollback()
@@ -40,37 +40,19 @@ async def add_contact_endpoint(add_contact_input: AddContactInput, db_conn: Asyn
 from app.api.contacts.schemas import GetAllContacts
 from app.api.contacts.services.GetContact import get_all_contancts
 
-@router.get("/get_contact/", tags=["contact"])
+@router.get("/get", tags=["contact"])
 async def get_contact_endpoint(input_data: GetAllContacts = Depends(), db_conn: AsyncSession = Depends(get_db)):
     # TODO add logs for time metrics
 
     try:
         async with db_conn.begin():
-            status_code, result = await get_all_contancts(db_conn, input_data.limit, input_data.offset)
+            status_code, result = await get_all_contancts(db_conn, input_data)
     except Exception as e:
         await db_conn.rollback()
         raise HTTPException(status_code=500, detail=f"Faild to get contants from DB - {e}")
         
     return Response(content=result, status_code=status_code, headers=headers)
     
-
-# --------------------------------- GetContactByPhone ---------------------------------
-from app.api.contacts.schemas import GetContactByPhoneInput
-from app.api.contacts.services.GetContact import get_contanct_by_phone
-
-@router.get("/get_contact/by_phone/", tags=["contact"])
-async def get_contact_endpoint(input_data: GetContactByPhoneInput = Depends(), db_conn: AsyncSession = Depends(get_db)):
-    # TODO add logs for time metrics
-
-    try:
-        async with db_conn.begin():
-            status_code, result = await get_contanct_by_phone(db_conn, input_data.phone_number)
-    except Exception as e:
-        await db_conn.rollback()
-        raise HTTPException(status_code=500, detail=f"Faild to get contant from DB - {e}")
-        
-    return Response(content=result, status_code=status_code, headers=headers)
-
 
 # --------------------------------- EditContact ---------------------------------
 from app.api.contacts.schemas import EditContactInput
@@ -85,7 +67,7 @@ async def add_contact_endpoint(edit_contact_input: EditContactInput, db_conn: As
          return Response(content=json.dumps({"status": "ok", "message": "Nothing to update"}), status_code=200, headers=headers)
     try:
         async with db_conn.begin():
-            status_code, result = await edit_contact(db_conn, edit_contact_input.phone_number, new_phone_number=edit_contact_input.new_phone_number, first_name=edit_contact_input.first_name, last_name=edit_contact_input.last_name, address=edit_contact_input.address)
+            status_code, result = await edit_contact(db_conn, edit_contact_input)
     except Exception as e:
         logger.error(f"Faild to edit {edit_contact_input.phone_number}. {e}")
         await db_conn.rollback()
@@ -107,7 +89,7 @@ async def add_contact_endpoint(delete_contact_input: DeleteContactInput, db_conn
          return Response(content=json.dumps({"status": "ok", "message": "Nothing to delete"}), status_code=200, headers=headers)
     try:
         async with db_conn.begin():
-            status_code, result = await delete_contact(db_conn, delete_contact_input.phone_number, delete_contact_input.first_name, delete_contact_input.last_name)
+            status_code, result = await delete_contact(db_conn, delete_contact_input)
     except Exception as e:
         logger.error(f"Faild to delete {delete_contact_input.phone_number}. {e}")
         await db_conn.rollback()
@@ -130,7 +112,7 @@ async def search_contact_endpoint(search_contact_input: SearchContactInput = Dep
     
     try:
         async with db_conn.begin():
-            status_code, result = await search_contact(db_conn, search_contact_input.phone_number, search_contact_input.first_name, search_contact_input.last_name)
+            status_code, result = await search_contact(db_conn, search_contact_input)
     except Exception as e:
         logger.error(f"Faild to search {search_contact_input.phone_number}. {e}")
         await db_conn.rollback()

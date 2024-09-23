@@ -8,27 +8,13 @@ from sqlalchemy.future import select
 from sqlalchemy.exc import IntegrityError
 from app.common.utils import handle_exception
 from app.common.logger import logger
+from app.api.contacts.schemas import DeleteContactInput
 
-def validate_input(phone_number, first_name, last_name):
-    if phone_number is not None and not utils.is_valid_phone_number(phone_number):
-        log_msg = f"Error editing contact. Invalid phone number - {phone_number}"
-        logger.error(log_msg)
-        raise ValueError(log_msg)
-    
-    if first_name is not None and not utils.is_valid_name(first_name):
-        log_msg = f"Error editing contact. Invalid first name - {first_name}"
-        logger.error(log_msg)
-        raise ValueError(log_msg)
-
-    if last_name is not None and not utils.is_valid_name(last_name):
-        log_msg = f"Error editing contact. Invalid last name - {last_name}"
-        logger.error(log_msg)
-        raise ValueError(log_msg)
-
-async def delete_contact(db_conn, phone_number=None, first_name=None, last_name=None):
+async def delete_contact(db_conn, delete_contact_input: DeleteContactInput):
+    phone_number = delete_contact_input.phone_number
+    first_name = delete_contact_input.first_name
+    last_name = delete_contact_input.last_name
     try:
-        # check if input is valid
-        validate_input(phone_number, first_name, last_name)
         
         # build dynamic query
         query = select(Contact).where(Contact.deleted_ts.is_(None))

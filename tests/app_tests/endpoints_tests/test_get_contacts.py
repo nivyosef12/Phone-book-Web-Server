@@ -67,7 +67,7 @@ class TestGetContact:
                 while True:
                     # get curr page
                     logging.info(f"getting contacts - limit={limit}, offset={offset}")
-                    response = await client.get(f"/api/contacts/get_contact/?limit={limit}&offset={offset}")
+                    response = await client.get(f"/api/contacts/get?limit={limit}&offset={offset}")
                     response_dict = response.json()
                     assert response.status_code == 200, f"Failed to get contacts - {response.json()}"
 
@@ -92,6 +92,20 @@ class TestGetContact:
 
         asyncio.get_event_loop().run_until_complete(inner())
 
+    def test_get_all_limit_at_max(self):
+        async def inner():
+            # Setup client
+            async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+                limit = int(get_env_variable("LIMIT_CONTACTS_RESPONSE"))
+                offset = 0
+
+                # get curr page
+                logging.info(f"getting contacts - limit={limit}, offset={offset}")
+                response = await client.get(f"/api/contacts/get?limit={limit}&offset={offset}")
+                assert response.status_code == 200, f"Failed to get contacts - {response.json()}"
+
+        asyncio.get_event_loop().run_until_complete(inner())
+
     def test_get_all_negative_limit(self):
         async def inner():
             # Setup client
@@ -101,8 +115,8 @@ class TestGetContact:
 
                 # get curr page
                 logging.info(f"getting contacts - limit={limit}, offset={offset}")
-                response = await client.get(f"/api/contacts/get_contact/?limit={limit}&offset={offset}")
-                assert response.status_code == 404, f"Failed to get contacts - {response.json()}"
+                response = await client.get(f"/api/contacts/get?limit={limit}&offset={offset}")
+                assert response.status_code == 422, f"Failed to get contacts - {response.json()}"
 
         asyncio.get_event_loop().run_until_complete(inner())
 
@@ -115,8 +129,8 @@ class TestGetContact:
 
                 # get curr page
                 logging.info(f"getting contacts - limit={limit}, offset={offset}")
-                response = await client.get(f"/api/contacts/get_contact/?limit={limit}&offset={offset}")
-                assert response.status_code == 404, f"Failed to get contacts - {response.json()}"
+                response = await client.get(f"/api/contacts/get?limit={limit}&offset={offset}")
+                assert response.status_code == 422, f"Failed to get contacts - {response.json()}"
 
         asyncio.get_event_loop().run_until_complete(inner())
     
@@ -130,8 +144,8 @@ class TestGetContact:
 
                 # get curr page
                 logging.info(f"getting contacts - limit={limit}, offset={offset}")
-                response = await client.get(f"/api/contacts/get_contact/?limit={limit}&offset={offset}")
-                assert response.status_code == 404, f"Failed to get contacts - {response.json()}"
+                response = await client.get(f"/api/contacts/get?limit={limit}&offset={offset}")
+                assert response.status_code == 422, f"Failed to get contacts - {response.json()}"
 
         asyncio.get_event_loop().run_until_complete(inner())
 

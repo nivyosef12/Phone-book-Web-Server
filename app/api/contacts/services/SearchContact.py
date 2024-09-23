@@ -9,8 +9,12 @@ from sqlalchemy.exc import IntegrityError
 from app.common.utils import handle_exception
 from app.common.logger import logger
 from app.common.exceptions import RecordNotFound
+from app.api.contacts.schemas import SearchContactInput
 
-async def search_contact(db_conn, phone_number=None, first_name=None, last_name=None):
+async def search_contact(db_conn, search_contact_input: SearchContactInput):
+    phone_number = search_contact_input.phone_number 
+    first_name = search_contact_input.first_name 
+    last_name = search_contact_input.last_name
     
     try:
         # build dynamic query
