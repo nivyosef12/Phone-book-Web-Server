@@ -7,6 +7,7 @@ from app.common.logger import logger
 from dotenv import load_dotenv
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
+from app.common.exceptions import ConflictError
 
 def handle_exception(e):
     """
@@ -27,6 +28,9 @@ def handle_exception(e):
     elif isinstance(e, IntegrityError):
         error_code = 400
         error_message = f"Integrity Error: {e}"
+    elif isinstance(e, ConflictError):
+        error_code = 409
+        error_message = f"Conflict Error: {e}"
     elif isinstance(e, HTTPException):
         error_code = e.status_code
         error_message = e.detail
