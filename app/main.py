@@ -2,12 +2,14 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from fastapi.responses import JSONResponse, Response
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.api.contacts.endpoints import router as contacts_router
 from app.common.utils import get_env_variable
 from app.common.logger import logger
 
 app = FastAPI()
+Instrumentator().instrument(app).expose(app)
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
