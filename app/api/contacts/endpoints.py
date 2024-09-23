@@ -114,3 +114,26 @@ async def add_contact_endpoint(delete_contact_input: DeleteContactInput, db_conn
         raise HTTPException(status_code=500, detail=f"Faild to delete {delete_contact_input.phone_number}. {e}")
         
     return Response(content=result, status_code=status_code, headers=headers)
+
+
+# --------------------------------- SearchContactInput ---------------------------------
+from app.api.contacts.schemas import SearchContactInput
+from app.api.contacts.services.SearchContact import search_contact
+
+@router.get("/search", tags=["contact"])
+async def search_contact_endpoint(search_contact_input: SearchContactInput = Depends(), db_conn: AsyncSession = Depends(get_db)):
+    # TODO add logs for time metrics
+    logger.info(f"delete_contant endpoint for {search_contact_input.phone_number} called")
+
+    if search_contact_input.phone_number is None and search_contact_input.first_name is None and search_contact_input.last_name is None:
+        return Response(content=json.dumps({"status": "error", "message": "At least one search criteria must be provided."}), status_code=400, headers=headers)
+    
+    try:
+        async with db_conn.begin():
+            status_code, result = await search_contact(db_conn, search_contact_input.phone_number, search_contact_input.first_name, search_contact_input.last_name)
+    except Exception as e:
+        logger.error(f"Faild to search {search_contact_input.phone_number}. {e}")
+        await db_conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Faild to search {search_contact_input.phone_number}. {e}")
+        
+    return Response(content=result, status_code=status_code, headers=headers)

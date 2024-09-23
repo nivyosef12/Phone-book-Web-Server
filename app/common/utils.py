@@ -7,7 +7,7 @@ from app.common.logger import logger
 from dotenv import load_dotenv
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
-from app.common.exceptions import ConflictError
+from app.common.exceptions import ConflictError, RecordNotFound
 
 def handle_exception(e):
     """
@@ -22,6 +22,9 @@ def handle_exception(e):
     if isinstance(e, ValueError):
         error_code = 404
         error_message = f"Value Error: {e}"
+    elif isinstance(e, RecordNotFound):
+        error_code = 404
+        error_message = f"Record Not Found Error: {e}"
     elif isinstance(e, urllib3.exceptions.HTTPError):
         error_code = 400
         error_message = f"HTTP Error: {e}"

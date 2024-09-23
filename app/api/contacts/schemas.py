@@ -30,3 +30,10 @@ class DeleteContactInput(BaseModel):
     phone_number: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+
+
+# --------------------------------- SearchContactInput ---------------------------------
+class SearchContactInput(BaseModel):
+    phone_number: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
