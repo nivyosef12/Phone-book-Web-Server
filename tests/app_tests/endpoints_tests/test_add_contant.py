@@ -89,7 +89,7 @@ class TestAddContact:
                 # add contact
                 logging.info(f"Adding {self.zoro} as contact")
                 response = await client.post("/api/contacts/add", json=self.zoro)
-                assert response.status_code == 200, f"Failed to add user - {response.json()}"
+                assert response.status_code == 201, f"Failed to add user - {response.json()}"
                 assert response.json()["status"] == "ok"
                 # self.contacts_number += 1
 
@@ -119,7 +119,7 @@ class TestAddContact:
                 # add contact
                 logging.info(f"Adding {self.chooper} as contact")
                 response = await client.post("/api/contacts/add", json=self.chooper)
-                assert response.status_code == 200, f"Failed to add user for the first time - {response.json()}"
+                assert response.status_code == 201, f"Failed to add user for the first time - {response.json()}"
                 assert response.json()["status"] == "ok"
 
                 # delete contact and re_add with diff name
@@ -129,7 +129,7 @@ class TestAddContact:
                 # re-add chopper with different name
                 self.chooper['first_name'] = "tony tony"
                 response = await client.post("/api/contacts/add", json=self.chooper)
-                assert response.status_code == 200, f"Failed to add user for the second time - {response.json()}"
+                assert response.status_code == 201, f"Failed to add user for the second time - {response.json()}"
                 assert response.json()["status"] == "ok"
                 # self.contacts_number += 1
 
@@ -158,7 +158,7 @@ class TestAddContact:
                 # add contact
                 logging.info(f"Adding {self.luffy} as contact")
                 response = await client.post("/api/contacts/add", json=self.luffy)
-                assert response.status_code == 200, f"Failed to add user - {response.json()}"
+                assert response.status_code == 201, f"Failed to add user - {response.json()}"
                 assert response.json()["status"] == "ok"
                 # self.contacts_number += 1
 
@@ -210,7 +210,7 @@ class TestAddContact:
 
                 logging.info(f"Adding {self.ussop} as contact")
                 response = await client.post("/api/contacts/add", json=self.ussop)
-                assert response.status_code == 200, f"Failed to add user without address - {response.json()}"
+                assert response.status_code == 201, f"Failed to add user without address - {response.json()}"
                 assert response.json()["status"] == "ok"
                 # self.contacts_number += 1
 
@@ -237,8 +237,7 @@ class TestAddContact:
                 response = await client.post("/api/contacts/add", json=self.sunji)
 
                 logging.info("Assert request failed")
-                assert response.status_code == 404, f"Expected 400 for invalid phone number - {response.json()}"
-                assert "Invalid phone number" in response.json()["error_msg"], "Error message should indicate invalid phone number."
+                assert response.status_code == 422, f"Expected 422 for invalid phone number - {response.json()}"
         asyncio.get_event_loop().run_until_complete(inner())
 
     def test_add_contact_duplicate_phone_number(self):
@@ -271,8 +270,7 @@ class TestAddContact:
                 })
 
                 logging.info("Assert request failed")
-                assert response.status_code == 404, f"Expected 400 for invalid name - {response.json()}"
-                assert "Invalid name" in response.json()["error_msg"], "Error message should indicate invalid name."
+                assert response.status_code == 422, f"Expected 422 for invalid name - {response.json()}"
         asyncio.get_event_loop().run_until_complete(inner())
 
     def test_add_contact_same_name(self):
@@ -285,7 +283,7 @@ class TestAddContact:
                 # add contact
                 logging.info(f"Adding {self.zoro_other_phone} as contact")
                 response = await client.post("/api/contacts/add", json=self.zoro_other_phone)
-                assert response.status_code == 200, f"Failed to add user - {response.json()}"
+                assert response.status_code == 201, f"Failed to add user - {response.json()}"
                 assert response.json()["status"] == "ok"
                 # self.contacts_number += 1
 
@@ -302,5 +300,39 @@ class TestAddContact:
                 assert zoro_contact.created_ts is not None, f"created_ts is None"
                 assert zoro_contact.updated_ts is not None, f"updated_ts is None"
                 assert zoro_contact.deleted_ts is None, f"deleted_ts is not None"
+
+        asyncio.get_event_loop().run_until_complete(inner())
+    
+    def test_add_db_constraint_exceed(self):
+
+        async def inner():
+            # setup client
+            logging.info("Setting up client")
+            async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+                
+                # add contact
+                response = await client.post("/api/contacts/add", json={
+                    "phone_number": "1" * 20,
+                    "first_name": "a",
+                    "last_name": "name",
+                    "address": "East Blue"
+                })
+                assert response.status_code == 422, f"Failed to add user - {response.json()}"
+
+                response = await client.post("/api/contacts/add", json={
+                    "phone_number": "11",
+                    "first_name": "a" * 150,
+                    "last_name": "name",
+                    "address": "East Blue"
+                })
+                assert response.status_code == 422, f"Failed to add user - {response.json()}"
+
+                response = await client.post("/api/contacts/add", json={
+                    "phone_number": "11",
+                    "first_name": "aa",
+                    "last_name": "a" * 150,
+                    "address": "East Blue"
+                })
+                assert response.status_code == 422, f"Failed to add user - {response.json()}"
 
         asyncio.get_event_loop().run_until_complete(inner())

@@ -9,27 +9,15 @@ from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 from app.common.utils import handle_exception
 from app.common.logger import logger
+from app.api.contacts.schemas import EditContactInput
 
-def validate_input(new_phone_number, first_name, last_name):
-    if new_phone_number is not None and not utils.is_valid_phone_number(new_phone_number):
-        log_msg = f"Error editing contact. Invalid phone number - {new_phone_number}"
-        logger.error(log_msg)
-        raise ValueError(log_msg)
-    
-    if first_name is not None and not utils.is_valid_name(first_name):
-        log_msg = f"Error editing contact. Invalid first name - {first_name}"
-        logger.error(log_msg)
-        raise ValueError(log_msg)
-
-    if last_name is not None and not utils.is_valid_name(last_name):
-        log_msg = f"Error editing contact. Invalid last name - {last_name}"
-        logger.error(log_msg)
-        raise ValueError(log_msg)
-
-async def edit_contact(db_conn, phone_number, new_phone_number=None, first_name=None, last_name=None, address=None):
+async def edit_contact(db_conn, edit_contact_input: EditContactInput):
+    phone_number = edit_contact_input.first_name
+    new_phone_number = edit_contact_input.new_phone_number
+    first_name = edit_contact_input.first_name
+    last_name = edit_contact_input.last_name
+    address = edit_contact_input.address
     try:
-        # check if input is valid
-        validate_input(new_phone_number, first_name, last_name)
         
         # fetch the existing contact by phone number
         result = await db_conn.execute(

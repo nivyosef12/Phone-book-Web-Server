@@ -10,28 +10,13 @@ from sqlalchemy.exc import IntegrityError
 from app.common.utils import handle_exception
 from app.common.logger import logger
 from app.common.exceptions import ConflictError
+from app.api.contacts.schemas import AddContactInput
 
-
-
-def is_valid_input(first_name, last_name, phone_number):
-    if not utils.is_valid_phone_number(phone_number):
-        log_msg = f"Error adding contact Invalid phone number - {phone_number}"
-        return False, log_msg
-    
-    if not utils.is_valid_name(first_name, last_name):
-        log_msg = f"Error adding contact. Invalid name - {first_name} {last_name if last_name is not None else ''}"
-        logger.error(log_msg)
-        return False, log_msg
-    
-    return True, "ok"
-
-async def add_contact(db_conn, first_name, phone_number, last_name=None, address=None):
-
-    # check if input is valid
-    is_valid, msg = is_valid_input(first_name, last_name, phone_number)
-    if not is_valid:
-        logger.error(msg)
-        return handle_exception(ValueError(msg))
+async def add_contact(db_conn, add_contact_input: AddContactInput):
+    first_name = add_contact_input.first_name
+    last_name = add_contact_input.last_name
+    phone_number = add_contact_input.phone_number
+    address = add_contact_input.address
     
     try:
         # fetch the existing contact by phone number
@@ -67,7 +52,7 @@ async def add_contact(db_conn, first_name, phone_number, last_name=None, address
         else:
             raise ConflictError(f"phone number = {phone_number} already exists")
 
-        return 200, json.dumps({"status": "ok", "message": response})
+        return 201, json.dumps({"status": "ok", "message": response})
     
     except ConflictError as e:
         logger.error(f"IntegrityError on add_contact endpoint - {e}")
