@@ -4,6 +4,8 @@ import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import delete
+
 from app.main import app
 from app.api.contacts.models import Contact
 from app.common.db import get_db
@@ -12,6 +14,8 @@ class TestAddContact:
 
     @classmethod
     def setup_class(cls):
+        cls.contacts_number = 6
+
         cls.luffy = {
             "first_name": "Luffy",
             "phone_number": "+1234567890",
@@ -50,6 +54,25 @@ class TestAddContact:
             "address": "East Blue"
         }
 
+    @classmethod
+    def teardown_class(cls):
+        # delete all added contacts
+        async def inner():
+            try:
+                async for db_conn in get_db():
+                    stmt = delete(Contact)
+                    result = await db_conn.execute(stmt)
+                    await db_conn.commit()
+                    
+                    deleted_count = result.rowcount
+                    if deleted_count != cls.contacts_number:
+                        raise Exception(f"deleted count({deleted_count}) != contacts_number({cls.contacts_number})")
+            except Exception as e:
+                logging.error(f"Error while deleting contacts - {e}")
+                raise e
+
+        asyncio.get_event_loop().run_until_complete(inner())
+ 
     async def get_contact_from_db(self, phone_number, db_conn: AsyncSession):
         result = await db_conn.execute(
             select(Contact).where(Contact.phone_number == phone_number)
@@ -68,6 +91,7 @@ class TestAddContact:
                 response = await client.post("/api/contacts/add", json=self.zoro)
                 assert response.status_code == 200, f"Failed to add user - {response.json()}"
                 assert response.json()["status"] == "ok"
+                # self.contacts_number += 1
 
                 # assert add endpoint worked
                 logging.info(f"Getting info from db where phone number = {self.zoro['phone_number']}")
@@ -107,7 +131,7 @@ class TestAddContact:
                 response = await client.post("/api/contacts/add", json=self.chooper)
                 assert response.status_code == 200, f"Failed to add user for the second time - {response.json()}"
                 assert response.json()["status"] == "ok"
-
+                # self.contacts_number += 1
 
                 # assert add endpoint worked
                 logging.info(f"Getting info from db where phone number = {self.chooper['phone_number']}")
@@ -136,6 +160,7 @@ class TestAddContact:
                 response = await client.post("/api/contacts/add", json=self.luffy)
                 assert response.status_code == 200, f"Failed to add user - {response.json()}"
                 assert response.json()["status"] == "ok"
+                # self.contacts_number += 1
 
                 logging.info(f"Getting info from db where phone number = {self.luffy['phone_number']}")
                 async for db_conn in get_db():
@@ -187,6 +212,7 @@ class TestAddContact:
                 response = await client.post("/api/contacts/add", json=self.ussop)
                 assert response.status_code == 200, f"Failed to add user without address - {response.json()}"
                 assert response.json()["status"] == "ok"
+                # self.contacts_number += 1
 
                 # assert the contact was added without an address
                 logging.info(f"Getting info from db where phone number = {self.ussop['phone_number']}")
@@ -222,6 +248,7 @@ class TestAddContact:
             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
                 logging.info(f"Adding {self.numi} for the first time")
                 await client.post("/api/contacts/add", json=self.numi)
+                # self.contacts_number += 1
 
                 logging.info(f"Adding {self.numi} for the second time")
                 response = await client.post("/api/contacts/add", json=self.numi)
@@ -260,6 +287,7 @@ class TestAddContact:
                 response = await client.post("/api/contacts/add", json=self.zoro_other_phone)
                 assert response.status_code == 200, f"Failed to add user - {response.json()}"
                 assert response.json()["status"] == "ok"
+                # self.contacts_number += 1
 
                 # assert add endpoint worked
                 logging.info(f"Getting info from db where phone number = {self.zoro_other_phone['phone_number']}")
