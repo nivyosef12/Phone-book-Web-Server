@@ -10,5 +10,9 @@ CREATE TABLE IF NOT EXISTS contacts (
 );
 
 
-CREATE INDEX idx_phone_number ON contacts(phone_number);
+CREATE EXTENSION pg_trgm;  -- for GIN indexes
+
 CREATE INDEX idx_deleted_ts ON contacts(deleted_ts);
+CREATE INDEX idx_first_name_gin ON contacts USING gin (first_name gin_trgm_ops);
+CREATE INDEX idx_last_name_gin ON contacts USING gin (last_name gin_trgm_ops);
+CREATE INDEX idx_phone_number_gin ON contacts USING gin (phone_number gin_trgm_ops);
