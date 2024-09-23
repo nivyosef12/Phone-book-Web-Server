@@ -107,6 +107,9 @@ async def search_contact_endpoint(search_contact_input: SearchContactInput = Dep
     # TODO add logs for time metrics
     logger.info(f"delete_contant endpoint for {search_contact_input.phone_number} called")
 
+    if isinstance(search_contact_input.phone_number, ValueError) or isinstance(search_contact_input.first_name, ValueError) or isinstance(search_contact_input.last_name, ValueError):
+        return Response(content=json.dumps({"status": "error", "message": "Unprocessable Entity"}), status_code=422, headers=headers)
+
     if search_contact_input.phone_number is None and search_contact_input.first_name is None and search_contact_input.last_name is None:
         return Response(content=json.dumps({"status": "error", "message": "At least one search criteria must be provided."}), status_code=400, headers=headers)
     

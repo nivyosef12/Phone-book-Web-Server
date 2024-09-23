@@ -143,3 +143,17 @@ class TestSearchContact:
                 assert response.status_code == 404, f"Status code not correct {response.status_code} - {response.json()}"
 
         asyncio.get_event_loop().run_until_complete(inner())
+
+    def test_search_contact_bad_input(self):
+        async def inner():
+            async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+                response = await client.get(f"/api/contacts/search?first_name=a1b")
+                assert response.status_code == 422, f"Status code not correct {response.status_code} - {response.json()}"
+                
+                response = await client.get(f"/api/contacts/search?last_name=a1b")
+                assert response.status_code == 422, f"Status code not correct {response.status_code} - {response.json()}"
+                
+                response = await client.get(f"/api/contacts/search?phone_number=a3a")
+                assert response.status_code == 422, f"Status code not correct {response.status_code} - {response.json()}"
+                
+        asyncio.get_event_loop().run_until_complete(inner())
