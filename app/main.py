@@ -8,7 +8,8 @@ from app.api.contacts.endpoints import router as contacts_router
 from app.common.utils import get_env_variable
 from app.common.logger import logger
 
-app = FastAPI()
+# app = FastAPI()
+app = FastAPI(openapi_url="/v1/api-docs/dashboard")
 Instrumentator().instrument(app).expose(app)
 
 @app.exception_handler(HTTPException)

@@ -36,10 +36,7 @@ async def add_contact(db_conn, first_name, phone_number, last_name=None, address
     try:
         # fetch the existing contact by phone number
         result = await db_conn.execute(
-                select(Contact).where(and_(
-                    Contact.phone_number == phone_number,
-                    Contact.deleted_ts.is_(None)
-                ))
+                select(Contact).where(Contact.phone_number == phone_number)
             )
         contact = result.scalar_one_or_none()
 
