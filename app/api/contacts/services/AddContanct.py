@@ -27,8 +27,9 @@ async def add_contact(db_conn, add_contact_input: AddContactInput):
 
         # no such contact ever existed
         if contact is None:
-            new_contact = Contact(first_name=first_name, last_name=last_name,
-                                    phone_number=phone_number, address=address, deleted_ts=None)
+            new_contact = Contact(first_name=first_name, first_name_lower=first_name.lower(), 
+                                  last_name=last_name, last_name_lower=last_name.lower() if last_name is not None else None,
+                                  phone_number=phone_number, address=address, deleted_ts=None)
             
             db_conn.add(new_contact)
             await db_conn.commit()
@@ -39,7 +40,9 @@ async def add_contact(db_conn, add_contact_input: AddContactInput):
         elif contact.deleted_ts is not None:
             contact.phone_number = phone_number
             contact.first_name = first_name
+            contact.first_name_lower = first_name.lower()
             contact.last_name = last_name
+            contact.last_name_lower = last_name.lower()
             contact.address = address
             contact.updated_ts = datetime.now() 
             contact.deleted_ts = None

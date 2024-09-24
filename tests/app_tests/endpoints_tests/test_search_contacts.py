@@ -27,6 +27,8 @@ class TestSearchContact:
                     new_contact = Contact(
                         first_name=contact['first_name'], 
                         last_name=contact['last_name'],
+                        first_name_lower=contact['first_name'].lower(), 
+                        last_name_lower=contact['last_name'].lower(),
                         phone_number=contact['phone_number'], 
                         address=contact['address'],
                         deleted_ts=contact['deleted_ts']

@@ -53,9 +53,11 @@ async def edit_contact(db_conn, edit_contact_input: EditContactInput):
             
             contact.phone_number = new_phone_number
         if first_name is not None:
+            contact.first_name_lower = first_name.lower()
             contact.first_name = first_name
         
         contact.last_name = last_name
+        contact.last_name_lower = last_name.lower() if last_name is not None else None
         contact.address = address
         contact.updated_ts = datetime.now() 
         contact.deleted_ts = None
