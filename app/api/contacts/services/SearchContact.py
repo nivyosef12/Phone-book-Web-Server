@@ -28,6 +28,7 @@ async def search_contact(db_conn, search_contact_input: SearchContactInput):
 
         logger.debug(f"\n\n\n{query}\n\n\n")
         # execute query and fetch all matching contacts
+        logger.info(f"Getting contacts from db....")
         result = await db_conn.execute(query)
         contacts = result.scalars().all()
 

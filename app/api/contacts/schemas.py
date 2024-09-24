@@ -20,7 +20,7 @@ class AddContactInput(BaseModel):
 
 # --------------------------------- GetAllContacts ---------------------------------
 class GetAllContacts(BaseModel):
-    limit: int = Field(..., gt=1, lt=int(get_env_variable("LIMIT_CONTACTS_RESPONSE"))+1)
+    limit: int = Field(..., gt=0, lt=int(get_env_variable("LIMIT_CONTACTS_RESPONSE"))+1)
     offset: Optional[int] = Field(0, ge=0)
 
 # --------------------------------- EditContactInput ---------------------------------
