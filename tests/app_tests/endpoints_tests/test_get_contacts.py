@@ -28,9 +28,13 @@ class TestGetContact:
                         phone_number = random_phone_number()
                     phone_numbers.add(f"{i}{phone_number}")
 
+                    first_name = random_string()
+                    last_name = random_string()
                     new_contact = Contact(
-                        first_name=random_string(), 
-                        last_name=random_string(),
+                        first_name=first_name,
+                        last_name=last_name,
+                        first_name_lower=first_name.lower(), 
+                        last_name_lower=last_name.lower(),
                         phone_number=phone_number, 
                         address=random_string()
                     )
@@ -41,13 +45,17 @@ class TestGetContact:
                 while phone_number in phone_numbers:
                     phone_number = random_phone_number()
                 phone_numbers.add(f"{phone_number}")
+                first_name = random_string()
+                last_name = random_string()
                 new_contact = Contact(
-                        first_name=random_string(), 
-                        last_name=random_string(),
-                        phone_number=phone_number, 
-                        address=random_string(),
-                        deleted_ts=datetime.now()
-                    )
+                    first_name=first_name,
+                    last_name=last_name,
+                    first_name_lower=first_name.lower(), 
+                    last_name_lower=last_name.lower(),
+                    phone_number=phone_number, 
+                    address=random_string(),
+                    deleted_ts=datetime.now()
+                )
                 db_conn.add(new_contact)
 
                 await db_conn.commit()

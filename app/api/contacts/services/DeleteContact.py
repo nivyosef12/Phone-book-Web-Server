@@ -22,9 +22,9 @@ async def delete_contact(db_conn, delete_contact_input: DeleteContactInput):
         if phone_number:
             query = query.where(Contact.phone_number == phone_number)
         if first_name:
-            query = query.where(Contact.first_name == first_name)
+            query = query.where(Contact.first_name_lower == first_name.lower())
         if last_name:
-            query = query.where(Contact.last_name == last_name)
+            query = query.where(Contact.last_name_lower == last_name.lower())
 
         logger.debug(f"\n\n\n{query}\n\n\n")
 

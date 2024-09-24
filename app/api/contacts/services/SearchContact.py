@@ -20,11 +20,11 @@ async def search_contact(db_conn, search_contact_input: SearchContactInput):
         # build dynamic query
         query = select(Contact).where(Contact.deleted_ts.is_(None))
         if phone_number:
-            query = query.where(Contact.phone_number.ilike(f'{phone_number}%'))
+            query = query.where(Contact.phone_number.like(f'{phone_number}%'))
         if first_name:
-            query = query.where(Contact.first_name.ilike(f'{first_name}%'))       
+            query = query.where(Contact.first_name_lower.like(f'{first_name.lower()}%'))       
         if last_name:
-            query = query.where(Contact.last_name.ilike(f'{last_name}%'))
+            query = query.where(Contact.last_name_lower.like(f'{last_name.lower()}%'))
 
         logger.debug(f"\n\n\n{query}\n\n\n")
         # execute query and fetch all matching contacts

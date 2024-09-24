@@ -8,7 +8,9 @@ class Contact(Base):
     
     id = Column(Integer, primary_key=True)
     first_name = Column(String(100))
+    first_name_lower = Column(String(100))
     last_name = Column(String(100))
+    last_name_lower = Column(String(100))
     phone_number = Column(String(15), unique=True)
     address = Column(Text)
     created_ts = Column(TIMESTAMP, server_default=func.now())
