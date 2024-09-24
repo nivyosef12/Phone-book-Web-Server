@@ -101,3 +101,88 @@ cd Phone-book-Web-Server
 - pytest tests/ # to run all tests
 - pytest pytest path/to/test/file # to run all tests on a certin test file (example - pytest tests/app_tests/common_tests/test_utils.py)
 - docker-compose down
+
+
+# Contact API Docs
+
+# Endpoints
+## Add Contact
+Adds a new contact to the database.
+## Endpoint: POST /add
+## Request Body:
+{
+  "first_name": "string",
+  "phone_number": "string",
+  "last_name": "string (optional)",
+  "address": "string (optional)"
+}
+
+## Response:
+- Status Code: 201 (Success)
+- Content: JSON response with operation result
+
+## Edit Contact
+Modifies an existing contact in the database.
+
+## Endpoint: POST /edit
+## Request Body:
+{
+  "phone_number": "string",
+  "new_phone_number": "string (optional)",
+  "first_name": "string (optional)",
+  "last_name": "string (optional)",
+  "address": "string (optional)"
+}
+
+## Response:
+- Status Code: 200 (Success)
+- Content: JSON response with operation result
+
+## Delete Contact
+Removes a contact from the database.
+
+## Endpoint: POST /delete
+## Request Body:
+{
+  "phone_number": "string (optional)",
+  "first_name": "string (optional)",
+  "last_name": "string (optional)"
+}
+
+## Response:
+- Status Code: 200 (Success)
+- Content: JSON response with operation result
+
+## Search Contact
+
+Searches for contacts in the database based on provided criteria.
+## Endpoint: GET /search
+## Query Parameters:
+- phone_number: string (optional)
+- first_name: string (optional)
+- last_name: string (optional)
+
+## Response:
+- Status Code: 200 (Success)
+- Content: JSON response with operation result
+
+## Get Contact
+
+Gets contacts from the database with a maximum of 10 with a pagination feature.
+## Endpoint: GET /get
+## Query Parameters:
+- limit: int
+- offset: int (optional)
+
+## Response:
+- Status Code: 200 (Success)
+- Content: JSON response with operation result
+
+
+# Error Handling
+All endpoints handle errors and return appropriate HTTP status codes:
+- 400: Bad Request (e.g., missing required fields)
+- 404: Value error (e.g., contact not found)
+- 409: Conflict error (e.g., violating db unique constraint)
+- 422: Unprocessable Entity (e.g., invalid input data)
+- 500: Internal Server Error
