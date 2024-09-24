@@ -1,4 +1,5 @@
 import json
+import time
 
 from fastapi import APIRouter, HTTPException, Response, Query, Request, Depends
 from fastapi.responses import JSONResponse, Response
@@ -22,15 +23,16 @@ from app.api.contacts.services.AddContanct import add_contact
 
 @router.post("/add", tags=["contact"])
 async def add_contact_endpoint(add_contact_input: AddContactInput, db_conn: AsyncSession = Depends(get_db)):
-    # TODO add logs for time metrics
+    start_time = time.time()
     full_name = f"{add_contact_input.first_name}" if add_contact_input.last_name is None else f"{add_contact_input.first_name} {add_contact_input.last_name}"
     logger.info(f"add_contact endpoint for {add_contact_input}")
 
     try:
         async with db_conn.begin():
             status_code, result = await add_contact(db_conn, add_contact_input)
+            logger.info(f"Added contacts successfully after {time.time() - start_time} seconds.")
     except Exception as e:
-        logger.error(f"Faild to add {full_name} to DB. {e}")
+        logger.error(f"Faild to add {full_name} to DB after {time.time() - start_time}. {e}")
         await db_conn.rollback()
         raise HTTPException(status_code=500, detail=f"Faild to add {full_name} to DB. {e}")
         
@@ -42,14 +44,16 @@ from app.api.contacts.services.GetContact import get_all_contancts
 
 @router.get("/get", tags=["contact"])
 async def get_contact_endpoint(input_data: GetAllContacts = Depends(), db_conn: AsyncSession = Depends(get_db)):
+    start_time = time.time()
     logger.info(f"get_contact endpoint for {input_data}")
 
     try:
         async with db_conn.begin():
             status_code, result = await get_all_contancts(db_conn, input_data)
+            logger.info(f"Got contacts successfully after {time.time() - start_time} seconds.")
     except Exception as e:
         await db_conn.rollback()
-        raise HTTPException(status_code=500, detail=f"Faild to get contants from DB - {e}")
+        raise HTTPException(status_code=500, detail=f"Faild to get contants from DB after {time.time() - start_time} seconds - {e}")
         
     return Response(content=result, status_code=status_code, headers=headers)
     
@@ -60,7 +64,7 @@ from app.api.contacts.services.EditContact import edit_contact
 
 @router.post("/edit", tags=["contact"])
 async def edit_contact_endpoint(edit_contact_input: EditContactInput, db_conn: AsyncSession = Depends(get_db)):
-    # TODO add logs for time metrics
+    start_time = time.time()
     logger.info(f"edit_contant endpoint for {edit_contact_input} called")
 
     if isinstance(edit_contact_input.phone_number, ValueError) or isinstance(edit_contact_input.first_name, ValueError) or isinstance(edit_contact_input.last_name, ValueError):
@@ -71,8 +75,9 @@ async def edit_contact_endpoint(edit_contact_input: EditContactInput, db_conn: A
     try:
         async with db_conn.begin():
             status_code, result = await edit_contact(db_conn, edit_contact_input)
+            logger.info(f"Edited contacts successfully after {time.time() - start_time} seconds.")
     except Exception as e:
-        logger.error(f"Faild to edit {edit_contact_input.phone_number}. {e}")
+        logger.error(f"Faild to edit {edit_contact_input.phone_number} after {time.time() - start_time} seconds. {e}")
         await db_conn.rollback()
         raise HTTPException(status_code=500, detail=f"Faild to edit {edit_contact_input.phone_number}. {e}")
         
@@ -85,7 +90,7 @@ from app.api.contacts.services.DeleteContact import delete_contact
 
 @router.post("/delete", tags=["contact"])
 async def delete_contact_endpoint(delete_contact_input: DeleteContactInput, db_conn: AsyncSession = Depends(get_db)):
-    # TODO add logs for time metrics
+    start_time = time.time()
     logger.info(f"add_contant endpoint for {delete_contact_input} called")
 
     if delete_contact_input.phone_number is None and delete_contact_input.first_name is None and delete_contact_input.last_name is None:
@@ -93,10 +98,11 @@ async def delete_contact_endpoint(delete_contact_input: DeleteContactInput, db_c
     try:
         async with db_conn.begin():
             status_code, result = await delete_contact(db_conn, delete_contact_input)
+            logger.info(f"Deleted contacts successfully after {time.time() - start_time} seconds.")
     except Exception as e:
         logger.error(f"Faild to delete {delete_contact_input.phone_number}. {e}")
         await db_conn.rollback()
-        raise HTTPException(status_code=500, detail=f"Faild to delete {delete_contact_input.phone_number}. {e}")
+        raise HTTPException(status_code=500, detail=f"Faild to delete {delete_contact_input.phone_number} after {time.time() - start_time} seconds. {e}")
         
     return Response(content=result, status_code=status_code, headers=headers)
 
@@ -107,7 +113,7 @@ from app.api.contacts.services.SearchContact import search_contact
 
 @router.get("/search", tags=["contact"])
 async def search_contact_endpoint(search_contact_input: SearchContactInput = Depends(), db_conn: AsyncSession = Depends(get_db)):
-    # TODO add logs for time metrics
+    start_time = time.time()
     logger.info(f"searchcontant endpoint for {search_contact_input} called")
 
     if isinstance(search_contact_input.phone_number, ValueError) or isinstance(search_contact_input.first_name, ValueError) or isinstance(search_contact_input.last_name, ValueError):
@@ -119,8 +125,9 @@ async def search_contact_endpoint(search_contact_input: SearchContactInput = Dep
     try:
         async with db_conn.begin():
             status_code, result = await search_contact(db_conn, search_contact_input)
+            logger.info(f"Got contacts successfully after {time.time() - start_time} seconds.")
     except Exception as e:
-        logger.error(f"Faild to search {search_contact_input.phone_number}. {e}")
+        logger.error(f"Faild to search {search_contact_input.phone_number} after {time.time() - start_time} seconds. {e}")
         await db_conn.rollback()
         raise HTTPException(status_code=500, detail=f"Faild to search {search_contact_input.phone_number}. {e}")
         

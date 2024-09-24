@@ -13,10 +13,9 @@ from app.api.contacts.schemas import GetAllContacts
 async def get_all_contancts(db_conn, input_data: GetAllContacts):
     limit = input_data.limit
     offset = input_data.offset
-    logger.info(f"Getting contacts information for limit={limit}, offset={offset}")
     
     try:
-        # TODO verify limit + offset dont excceed num of contacts?
+        logger.info(f"Getting contacts from db....")
         result_query = await db_conn.execute(
                 select(Contact).where(Contact.deleted_ts.is_(None)).order_by(Contact.id).limit(limit).offset(offset)
             )

@@ -29,6 +29,7 @@ async def delete_contact(db_conn, delete_contact_input: DeleteContactInput):
         logger.debug(f"\n\n\n{query}\n\n\n")
 
         # execute query
+        logger.info(f"Getting contacts from db....")
         result = await db_conn.execute(query)
         contacts = result.scalars().all()
 
@@ -38,6 +39,7 @@ async def delete_contact(db_conn, delete_contact_input: DeleteContactInput):
             return handle_exception(ValueError("No contacts found matching the criteria"))
 
         # mark contacts as deleted
+        logger.info(f"Fetched {len(contacts)}. deleteing....")
         for contact in contacts:
             contact.deleted_ts = datetime.now()
 

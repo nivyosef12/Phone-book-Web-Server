@@ -21,6 +21,7 @@ async def edit_contact(db_conn, edit_contact_input: EditContactInput):
     try:
         
         # fetch the existing contact by phone number
+        logger.info(f"Getting contacts from db....")
         result = await db_conn.execute(
                 select(Contact).where(and_(
                     Contact.phone_number == phone_number,

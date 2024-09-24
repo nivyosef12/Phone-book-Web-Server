@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse, Response
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.api.contacts.endpoints import router as contacts_router
+from app.api.metrics.endpoints import router as metrics_router
 from app.common.utils import get_env_variable
 from app.common.logger import logger
 
@@ -47,6 +48,7 @@ origins = [
 ]
 
 app.include_router(contacts_router, prefix="/api/contacts")
+app.include_router(metrics_router, prefix="/api/metrics")
 
 @app.get("/")
 def root():

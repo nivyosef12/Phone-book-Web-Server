@@ -32,6 +32,13 @@ A scalable and simple phone book API built with FastAPI, Postgres db, and Docker
 │   │   │   ├── models.py
 │   │   │   ├── schemas.py
 │   │   │   └── utils.py
+│   │   ├── metrics
+│   │   │   ├── services
+│   │   │   │   └── __init__.py
+│   │   │   ├── __init__.py
+│   │   │   ├── endpoints.py
+│   │   │   ├── schemas.py
+│   │   │   └── utils.py
 │   ├── common
 │   │   ├── __init__.py
 │   │   ├── db.py
