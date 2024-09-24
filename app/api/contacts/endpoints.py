@@ -89,7 +89,7 @@ async def delete_contact_endpoint(delete_contact_input: DeleteContactInput, db_c
     logger.info(f"add_contant endpoint for {delete_contact_input} called")
 
     if delete_contact_input.phone_number is None and delete_contact_input.first_name is None and delete_contact_input.last_name is None:
-         return Response(content=json.dumps({"status": "ok", "message": "Nothing to delete"}), status_code=200, headers=headers)
+         return Response(content=json.dumps({"status": "error", "message": "At least one delete criteria must be provided."}), status_code=422, headers=headers)
     try:
         async with db_conn.begin():
             status_code, result = await delete_contact(db_conn, delete_contact_input)
