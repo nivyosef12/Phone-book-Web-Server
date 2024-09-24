@@ -9,17 +9,17 @@ from sqlalchemy import delete
 from app.main import app
 from app.api.contacts.models import Contact
 from app.common.db import get_db
-from tests.utils import random_phone_number, random_string
-
+from datetime import datetime
 class TestSearchContact:
 
     @classmethod
     def setup_class(cls):
         cls.contacts = [
-            {"phone_number": "1111111111", "first_name": "aaa", "last_name": "bbb", "address": "TLV"},
-            {"phone_number": "2222222222", "first_name": "aaron", "last_name": "ccc", "address": "Jerusalem"},
-            {"phone_number": "3333333333", "first_name": "ann", "last_name": "ddd", "address": "Haifa"},
-            {"phone_number": "4444444444", "first_name": "bob", "last_name": "smith", "address": "Beer Sheva"},
+            {"phone_number": "1111111111", "first_name": "aaa", "last_name": "bbb", "address": "TLV", "deleted_ts": None},
+            {"phone_number": "2222222222", "first_name": "aaron", "last_name": "ccc", "address": "Jerusalem", "deleted_ts": None},
+            {"phone_number": "3333333333", "first_name": "ann", "last_name": "ddd", "address": "Haifa", "deleted_ts": None},
+            {"phone_number": "4444444444", "first_name": "bob", "last_name": "smith", "address": "Beer Sheva", "deleted_ts": None},
+            {"phone_number": "5555555555", "first_name": "slim", "last_name": "shady", "address": "Detroit", "deleted_ts": datetime.now()},
         ]
         async def inner():
             async for db_conn in get_db():
@@ -28,7 +28,8 @@ class TestSearchContact:
                         first_name=contact['first_name'], 
                         last_name=contact['last_name'],
                         phone_number=contact['phone_number'], 
-                        address=contact['address']
+                        address=contact['address'],
+                        deleted_ts=contact['deleted_ts']
                     )
                     db_conn.add(new_contact)
                 
@@ -66,6 +67,8 @@ class TestSearchContact:
         async def inner():
             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
                 contact_to_search = random.choice(self.contacts)
+                while contact_to_search['deleted_ts'] is not None:
+                    contact_to_search = random.choice(self.contacts)
 
                 logging.info(f"searching contacts by phone number=({contact_to_search['phone_number']}) prefix")
                 response = await client.get(f"/api/contacts/search?phone_number={contact_to_search['phone_number'][0:3]}")
@@ -95,6 +98,8 @@ class TestSearchContact:
         async def inner():
             async with httpx.AsyncClient(app=app, base_url="http://test") as client:
                 contact_to_search = random.choice(self.contacts)
+                while contact_to_search['deleted_ts'] is not None:
+                    contact_to_search = random.choice(self.contacts)
 
                 logging.info(f"searching contacts by last_name=({contact_to_search['last_name']}) prefix")
                 response = await client.get(f"/api/contacts/search?last_name={contact_to_search['last_name'][0:2]}")
@@ -128,4 +133,27 @@ class TestSearchContact:
                 response = await client.get(f"/api/contacts/search?phone_number=999")
                 assert response.status_code == 404, f"Status code not correct {response.status_code} - {response.json()}"
 
+        asyncio.get_event_loop().run_until_complete(inner())
+    
+    def test_search_deleted_contact(self):
+        async def inner():
+            async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+                logging.info(f"searching contacts with no match")
+                response = await client.get(f"/api/contacts/search?phone_number=555")
+                assert response.status_code == 404, f"Status code not correct {response.status_code} - {response.json()}"
+
+        asyncio.get_event_loop().run_until_complete(inner())
+
+    def test_search_contact_bad_input(self):
+        async def inner():
+            async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+                response = await client.get(f"/api/contacts/search?first_name=a1b")
+                assert response.status_code == 422, f"Status code not correct {response.status_code} - {response.json()}"
+                
+                response = await client.get(f"/api/contacts/search?last_name=a1b")
+                assert response.status_code == 422, f"Status code not correct {response.status_code} - {response.json()}"
+                
+                response = await client.get(f"/api/contacts/search?phone_number=a3a")
+                assert response.status_code == 422, f"Status code not correct {response.status_code} - {response.json()}"
+                
         asyncio.get_event_loop().run_until_complete(inner())

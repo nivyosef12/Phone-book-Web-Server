@@ -52,8 +52,11 @@ A scalable and simple phone book API built with FastAPI, Postgres db, and Docker
 │       │   └── test_utils.py
 │       ├── endpoints_tests
 │       │   ├── __init__.py
-│       │   ├── test_add_contacts.py
+│       │   ├── test_search_contacts.py
 │       │   ├── test_get_contacts.py
+│       │   ├── test_add_contact.py
+│       │   ├── test_editcontact.py
+│       │   ├── test_delete_contact.py
 │       │   └── test_root.py
 │       └── validator_tests
 │           ├── __init__.py

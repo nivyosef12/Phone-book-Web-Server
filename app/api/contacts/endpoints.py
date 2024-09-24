@@ -24,7 +24,7 @@ from app.api.contacts.services.AddContanct import add_contact
 async def add_contact_endpoint(add_contact_input: AddContactInput, db_conn: AsyncSession = Depends(get_db)):
     # TODO add logs for time metrics
     full_name = f"{add_contact_input.first_name}" if add_contact_input.last_name is None else f"{add_contact_input.first_name} {add_contact_input.last_name}"
-    logger.info(f"add_contact endpoint for {full_name} with {add_contact_input.phone_number} as phone number")
+    logger.info(f"add_contact endpoint for {add_contact_input}")
 
     try:
         async with db_conn.begin():
@@ -42,7 +42,7 @@ from app.api.contacts.services.GetContact import get_all_contancts
 
 @router.get("/get", tags=["contact"])
 async def get_contact_endpoint(input_data: GetAllContacts = Depends(), db_conn: AsyncSession = Depends(get_db)):
-    # TODO add logs for time metrics
+    logger.info(f"get_contact endpoint for {input_data}")
 
     try:
         async with db_conn.begin():
@@ -59,12 +59,15 @@ from app.api.contacts.schemas import EditContactInput
 from app.api.contacts.services.EditContact import edit_contact
 
 @router.post("/edit", tags=["contact"])
-async def add_contact_endpoint(edit_contact_input: EditContactInput, db_conn: AsyncSession = Depends(get_db)):
+async def edit_contact_endpoint(edit_contact_input: EditContactInput, db_conn: AsyncSession = Depends(get_db)):
     # TODO add logs for time metrics
-    logger.info(f"edit_contant endpoint for {edit_contact_input.phone_number} called")
+    logger.info(f"edit_contant endpoint for {edit_contact_input} called")
+
+    if isinstance(edit_contact_input.phone_number, ValueError) or isinstance(edit_contact_input.first_name, ValueError) or isinstance(edit_contact_input.last_name, ValueError):
+        return Response(content=json.dumps({"status": "error", "message": "Unprocessable Entity"}), status_code=422, headers=headers)
 
     if edit_contact_input.new_phone_number is None and edit_contact_input.first_name is None and edit_contact_input.last_name is None and edit_contact_input.address is None:
-         return Response(content=json.dumps({"status": "ok", "message": "Nothing to update"}), status_code=200, headers=headers)
+         return Response(content=json.dumps({"status": "error", "message": "At least one edit criteria must be provided."}), status_code=422, headers=headers)
     try:
         async with db_conn.begin():
             status_code, result = await edit_contact(db_conn, edit_contact_input)
@@ -81,12 +84,12 @@ from app.api.contacts.schemas import DeleteContactInput
 from app.api.contacts.services.DeleteContact import delete_contact
 
 @router.post("/delete", tags=["contact"])
-async def add_contact_endpoint(delete_contact_input: DeleteContactInput, db_conn: AsyncSession = Depends(get_db)):
+async def delete_contact_endpoint(delete_contact_input: DeleteContactInput, db_conn: AsyncSession = Depends(get_db)):
     # TODO add logs for time metrics
-    logger.info(f"edit_contant endpoint for {delete_contact_input.phone_number} called")
+    logger.info(f"add_contant endpoint for {delete_contact_input} called")
 
     if delete_contact_input.phone_number is None and delete_contact_input.first_name is None and delete_contact_input.last_name is None:
-         return Response(content=json.dumps({"status": "ok", "message": "Nothing to delete"}), status_code=200, headers=headers)
+         return Response(content=json.dumps({"status": "error", "message": "At least one delete criteria must be provided."}), status_code=422, headers=headers)
     try:
         async with db_conn.begin():
             status_code, result = await delete_contact(db_conn, delete_contact_input)
@@ -105,7 +108,10 @@ from app.api.contacts.services.SearchContact import search_contact
 @router.get("/search", tags=["contact"])
 async def search_contact_endpoint(search_contact_input: SearchContactInput = Depends(), db_conn: AsyncSession = Depends(get_db)):
     # TODO add logs for time metrics
-    logger.info(f"delete_contant endpoint for {search_contact_input.phone_number} called")
+    logger.info(f"searchcontant endpoint for {search_contact_input} called")
+
+    if isinstance(search_contact_input.phone_number, ValueError) or isinstance(search_contact_input.first_name, ValueError) or isinstance(search_contact_input.last_name, ValueError):
+        return Response(content=json.dumps({"status": "error", "message": "Unprocessable Entity"}), status_code=422, headers=headers)
 
     if search_contact_input.phone_number is None and search_contact_input.first_name is None and search_contact_input.last_name is None:
         return Response(content=json.dumps({"status": "error", "message": "At least one search criteria must be provided."}), status_code=400, headers=headers)

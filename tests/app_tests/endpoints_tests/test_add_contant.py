@@ -239,6 +239,38 @@ class TestAddContact:
                 logging.info("Assert request failed")
                 assert response.status_code == 422, f"Expected 422 for invalid phone number - {response.json()}"
         asyncio.get_event_loop().run_until_complete(inner())
+    
+    def test_add_contact_invalid_first_name(self):
+        async def inner():
+
+            logging.info("Setting up client")
+            async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+                response = await client.post("/api/contacts/add", json={
+                    "first_name": "some3",
+                    "last_name": "name",
+                    "phone_number": "+123",
+                    "address": "gg"
+                })
+
+                logging.info("Assert request failed")
+                assert response.status_code == 422, f"Expected 422 for invalid phone number - {response.json()}"
+        asyncio.get_event_loop().run_until_complete(inner())
+    
+    def test_add_contact_invalid_last_name(self):
+        async def inner():
+
+            logging.info("Setting up client")
+            async with httpx.AsyncClient(app=app, base_url="http://test") as client:
+                response = await client.post("/api/contacts/add", json={
+                    "first_name": "some",
+                    "last_name": "name4",
+                    "phone_number": "+123",
+                    "address": "gg"
+                })
+
+                logging.info("Assert request failed")
+                assert response.status_code == 422, f"Expected 422 for invalid phone number - {response.json()}"
+        asyncio.get_event_loop().run_until_complete(inner())
 
     def test_add_contact_duplicate_phone_number(self):
         async def inner():
